@@ -1,7 +1,7 @@
 #ifndef __LOGGER_HPP__
 #define __LOGGER_HPP__
 
-#include <cstdarg>
+#include <fmt/core.h>
 
 namespace logger
 {
@@ -47,14 +47,23 @@ namespace logger
         OFF
     };
 
-    void log_write(Category cat, Level lvl, char eol, const char* fmt, va_list args);
+    void log_write(Category cat, Level lvl, const std::string& str, char eol = 0);
 
-    inline void infol(Category cat, const char* fmt, ...)
+
+    inline void info(Category cat, const char* str) { log_write(cat, INFO, str); }
+
+    inline void infol(Category cat, const char* str) { log_write(cat, INFO, str, '\n'); }
+
+    template <typename... Args>
+    inline void info(Category cat, const char* fmt, const Args&... args)
     {
-        va_list args;
-        va_start(args, fmt);
-        log_write(cat, INFO, '\n', fmt, args);
-        va_end(args);
+        log_write(cat, INFO, fmt::format(fmt, args...));
+    }
+
+    template <typename... Args>
+    inline void infol(Category cat, const char* fmt, const Args&... args)
+    {
+        log_write(cat, INFO, fmt::format(fmt, args...), '\n');
     }
 }
 

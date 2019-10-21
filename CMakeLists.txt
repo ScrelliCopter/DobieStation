@@ -39,6 +39,7 @@ endif()
 
 # Externals
 add_subdirectory(ext/libdeflate)
+add_subdirectory(ext/fmt)
 
 # Shared packages
 find_package(Threads REQUIRED)

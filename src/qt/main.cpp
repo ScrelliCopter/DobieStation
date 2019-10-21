@@ -13,7 +13,10 @@ int main(int argc, char** argv)
     QApplication::setApplicationName("DobieStation");
     QApplication::setOrganizationDomain("https://github.com/PSI-Rockin/DobieStation");
 
-    infol(CAT_MISC, "test %s", "test");
+    infol(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
+    info(CAT_MISC, "hi?");
+    info(CAT_MISC, "hi!");
+    infol(CAT_MISC, "hi.");
 
     QApplication a(argc, argv);
     auto window = unique_ptr<EmuWindow>(new EmuWindow());
