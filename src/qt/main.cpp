@@ -12,10 +12,10 @@ int main(int argc, char** argv)
 
     QApplication a(argc, argv);
 
-    auto logger = std::unique_ptr<Log>(new Log);
+    auto logger = std::unique_ptr<Logger>(new Logger);
     ds_log = logger.get();
 
-    Log::write(Log::Category::MISC, Log::Level::INFO, "hi? {}", "hi");
+    info_l(CAT_MISC, "hi? {}", "hi");
 
     EmuWindow* window = new EmuWindow();
 

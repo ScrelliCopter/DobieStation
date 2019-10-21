@@ -1,8 +1,8 @@
 #include "logger.hpp"
 
-Log* ds_log;
+Logger* ds_log;
 
-Log::Log()
+Logger::Logger()
 {
     try
     {

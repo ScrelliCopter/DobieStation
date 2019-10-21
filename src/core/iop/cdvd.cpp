@@ -331,8 +331,8 @@ bool CDVD_Drive::load_disc(const char *name, CDVD_CONTAINER a_container)
     if (!container_open(name))
         return false;
 
-    ds_log->cdvd->info("Disc size: {} bytes.\n", file_size);
-    ds_log->cdvd->info("Locating Primary Volume Descriptor.\n");
+    info_l(CAT_CDVD, "Disc size: {} bytes.", file_size);
+    info_l(CAT_CDVD, "Locating Primary Volume Descriptor.");
     uint8_t type = 0;
     int sector = 0x0F;
     while (type != 1)
@@ -341,19 +341,19 @@ bool CDVD_Drive::load_disc(const char *name, CDVD_CONTAINER a_container)
         container_seek(sector * 2048);
         container_read(&type, sizeof(uint8_t));
     }
-    ds_log->cdvd->info("Primary Volume Descriptor found at sector {}.\n", sector);
+    info_l(CAT_CDVD, "Primary Volume Descriptor found at sector {}.", sector);
 
     container_seek(sector * 2048);
     container_read(pvd_sector, 2048);
 
     LBA = *(uint16_t*)&pvd_sector[128];
-    ds_log->cdvd->info("PVD LBA: ${:08X}\n", LBA);
+    info_l(CAT_CDVD, "PVD LBA: ${:08X}", LBA);
 
     root_location = *(uint32_t*)&pvd_sector[156 + 2] * LBA;
     root_len = *(uint32_t*)&pvd_sector[156 + 10];
-    ds_log->cdvd->info("Root dir len: {}\n", *(uint16_t*)&pvd_sector[156]);
-    ds_log->cdvd->info("Extent loc: ${:08X}\n", root_location);
-    ds_log->cdvd->info("Extent len: ${:08X}\n", root_len);
+    info_l(CAT_CDVD, "Root dir len: {}", *(uint16_t*)&pvd_sector[156]);
+    info_l(CAT_CDVD, "Extent loc: ${:08X}", root_location);
+    info_l(CAT_CDVD, "Extent len: ${:08X}", root_len);
 
     return true;
 }

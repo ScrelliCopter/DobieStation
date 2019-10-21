@@ -10,58 +10,9 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/dist_sink.h"
 
-class Log;
-extern Log* ds_log;
-
-class Log
+class Logger
 {
 public:
-    enum class Category
-    {
-        MISC,
-        EE,
-        EE_TIMING,
-        IOP,
-        IOP_DMA,
-        IOP_TIMING,
-        COP,
-        FPU,
-        IPU,
-        CDVD,
-        PAD,
-        SPU,
-        GIF,
-        GS,
-        GS_R,
-        GS_T,
-        DMAC,
-        SIO2,
-        SIF,
-        VIF,
-        VU,
-        VU0,
-        VU1,
-        VU_JIT,
-        VU_JIT64
-    };
-
-    enum class Level
-    {
-        TRACE = SPDLOG_LEVEL_TRACE,
-        DEBUG = SPDLOG_LEVEL_DEBUG,
-        INFO = SPDLOG_LEVEL_INFO,
-        WARN = SPDLOG_LEVEL_WARN,
-        ERROR = SPDLOG_LEVEL_ERROR,
-        CRITICAL = SPDLOG_LEVEL_CRITICAL,
-        OFF = SPDLOG_LEVEL_OFF
-    };
-
-    template <typename... Args>
-    static void write(Category cat, Level lvl, const char* fmt, Args&... args)
-    {
-        ds_log->main->log(static_cast<spdlog::level::level_enum>(lvl), fmt, args...);
-    }
-
     std::shared_ptr<spdlog::logger> main;
 
     std::shared_ptr<spdlog::logger> ee;
@@ -93,8 +44,46 @@ public:
     std::shared_ptr<spdlog::logger> vu_jit;
     std::shared_ptr<spdlog::logger> vu_jit64;
 
-    Log();
-    ~Log() = default;
+    Logger();
+    ~Logger() = default;
 };
+
+extern Logger* ds_log;
+
+enum Category
+{
+    CAT_MISC,
+    CAT_EE,
+    CAT_EE_TIMING,
+    CAT_IOP,
+    CAT_IOP_DMA,
+    CAT_IOP_TIMING,
+    CAT_COP,
+    CAT_FPU,
+    CAT_IPU,
+    CAT_CDVD,
+    CAT_PAD,
+    CAT_SPU,
+    CAT_GIF,
+    CAT_GS,
+    CAT_GS_R,
+    CAT_GS_T,
+    CAT_DMAC,
+    CAT_SIO2,
+    CAT_SIF,
+    CAT_VIF,
+    CAT_VU,
+    CAT_VU0,
+    CAT_VU1,
+    CAT_VU_JIT,
+    CAT_VU_JIT64
+};
+
+template <typename... Args>
+inline void info_l(Category cat, const char* fmt, Args&... args)
+{
+    ds_log->main->log(spdlog::level::level_enum::info, fmt, args...);
+    ds_log->main->log(spdlog::level::level_enum::info, '\n');
+}
 
 #endif//LOGGER_HPP

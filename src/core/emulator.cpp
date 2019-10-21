@@ -365,6 +365,7 @@ void Emulator::execute_ELF()
     {
         Errors::die("[Emulator] ELF not loaded!\n");
     }
+    info_l(CAT_MISC, "Loading ELF into memory...");
     ds_log->main->info("Loading ELF into memory...\n");
     uint32_t e_entry = *(uint32_t*)&ELF_file[0x18];
     uint32_t e_phoff = *(uint32_t*)&ELF_file[0x1C];
