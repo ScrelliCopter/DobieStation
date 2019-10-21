@@ -13,11 +13,11 @@ int main(int argc, char** argv)
     QApplication::setApplicationName("DobieStation");
     QApplication::setOrganizationDomain("https://github.com/PSI-Rockin/DobieStation");
 
-    infol(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
-    infol(CAT_MISC, "poop {:i}", "oops"); // type error
-    info(CAT_MISC, "hi?");
-    info(CAT_MISC, "hi!");
-    infol(CAT_MISC, "hi.");
+    info_l(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
+    error(CAT_MISC, "poop {:i}", "oops"); // type error
+    warn(CAT_MISC, "hi?");
+    warn(CAT_MISC, "hi!");
+    trace_l(CAT_MISC, "hi.");
 
     QApplication a(argc, argv);
     auto window = unique_ptr<EmuWindow>(new EmuWindow());
