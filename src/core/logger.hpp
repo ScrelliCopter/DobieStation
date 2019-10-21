@@ -62,24 +62,24 @@ namespace logger
         }
     }
 
-#define LOGGER_GENERATE_WRAPPER_FUNC(NAME, NAME_NEWLINE, CAT) \
+#define LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT) \
     inline void NAME(Category cat, const char* str) { \
         log_write(cat, CAT, str); } \
-    inline void NAME_NEWLINE(Category cat, const char* str) { \
+    inline void NAME##_l(Category cat, const char* str) { \
         log_write(cat, CAT, str, '\n'); } \
     template <typename... Args> \
     inline void NAME(Category cat, const char* fmt, const Args&... args) { \
         log_write(cat, CAT, '\0', fmt, args...); } \
     template <typename... Args> \
-    inline void NAME_NEWLINE(Category cat, const char* fmt, const Args&... args) { \
+    inline void NAME##_l(Category cat, const char* fmt, const Args&... args) { \
         log_write(cat, CAT, '\n', fmt, args...); }
 
-    LOGGER_GENERATE_WRAPPER_FUNC(trace, trace_l, TRACE)
-    LOGGER_GENERATE_WRAPPER_FUNC(debug, debug_l, DEBUG)
-    LOGGER_GENERATE_WRAPPER_FUNC(info, info_l, INFO)
-    LOGGER_GENERATE_WRAPPER_FUNC(warn, warn_l, WARN)
-    LOGGER_GENERATE_WRAPPER_FUNC(error, error_l, ERROR)
-    LOGGER_GENERATE_WRAPPER_FUNC(critial, critial_l, CRITICAL)
+    LOGGER_GENERATE_WRAPPER_FUNC(trace, TRACE)
+    LOGGER_GENERATE_WRAPPER_FUNC(debug, DEBUG)
+    LOGGER_GENERATE_WRAPPER_FUNC(info, INFO)
+    LOGGER_GENERATE_WRAPPER_FUNC(warn, WARN)
+    LOGGER_GENERATE_WRAPPER_FUNC(error, ERROR)
+    LOGGER_GENERATE_WRAPPER_FUNC(critial, CRITICAL)
 
 }
 
