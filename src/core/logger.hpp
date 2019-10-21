@@ -10,9 +10,58 @@
 #include "spdlog/sinks/basic_file_sink.h"
 #include "spdlog/sinks/dist_sink.h"
 
+class Log;
+extern Log* ds_log;
+
 class Log
 {
 public:
+    enum class Category
+    {
+        MISC,
+        EE,
+        EE_TIMING,
+        IOP,
+        IOP_DMA,
+        IOP_TIMING,
+        COP,
+        FPU,
+        IPU,
+        CDVD,
+        PAD,
+        SPU,
+        GIF,
+        GS,
+        GS_R,
+        GS_T,
+        DMAC,
+        SIO2,
+        SIF,
+        VIF,
+        VU,
+        VU0,
+        VU1,
+        VU_JIT,
+        VU_JIT64
+    };
+
+    enum class Level
+    {
+        TRACE = SPDLOG_LEVEL_TRACE,
+        DEBUG = SPDLOG_LEVEL_DEBUG,
+        INFO = SPDLOG_LEVEL_INFO,
+        WARN = SPDLOG_LEVEL_WARN,
+        ERROR = SPDLOG_LEVEL_ERROR,
+        CRITICAL = SPDLOG_LEVEL_CRITICAL,
+        OFF = SPDLOG_LEVEL_OFF
+    };
+
+    template <typename... Args>
+    static void write(Category cat, Level lvl, const char* fmt, Args&... args)
+    {
+        ds_log->main->log(static_cast<spdlog::level::level_enum>(lvl), fmt, args...);
+    }
+
     std::shared_ptr<spdlog::logger> main;
 
     std::shared_ptr<spdlog::logger> ee;
@@ -47,7 +96,5 @@ public:
     Log();
     ~Log() = default;
 };
-
-extern Log* ds_log;
 
 #endif//LOGGER_HPP

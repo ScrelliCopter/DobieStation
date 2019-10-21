@@ -15,6 +15,8 @@ int main(int argc, char** argv)
     auto logger = std::unique_ptr<Log>(new Log);
     ds_log = logger.get();
 
+    Log::write(Log::Category::MISC, Log::Level::INFO, "hi? {}", "hi");
+
     EmuWindow* window = new EmuWindow();
 
     if (window->init(argc, argv))
