@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <memory>
 #include "emuwindow.hpp"
 
 using namespace std;
@@ -11,7 +12,8 @@ int main(int argc, char** argv)
 
     QApplication a(argc, argv);
 
-    ds_log = new Log;
+    auto logger = std::unique_ptr<Log>(new Log);
+    ds_log = logger.get();
 
     EmuWindow* window = new EmuWindow();
 
