@@ -11,7 +11,7 @@ int main(int argc, char** argv)
 
     QApplication a(argc, argv);
 
-    ds_log = new ds_logger;
+    ds_log = new Log;
 
     EmuWindow* window = new EmuWindow();
 
