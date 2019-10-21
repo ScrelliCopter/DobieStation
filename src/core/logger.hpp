@@ -47,24 +47,32 @@ namespace logger
         OFF
     };
 
-    void log_write(Category cat, Level lvl, const std::string& str, char eol = 0);
+    void log_write(Category cat, Level lvl, const std::string& str, char eol = '\0');
 
+    template <typename... Args>
+    inline void log_write(Category cat, Level lvl, char eof, const char* fmt, const Args&... args)
+    {
+        try
+        {
+            log_write(cat, lvl, fmt::format(fmt, args...), eof);
+        }
+        catch (std::exception& e)
+        {
+            fmt::print(stderr, "!!!! LOGGING ERROR: {} !!!!\n", e.what());
+        }
+    }
 
     inline void info(Category cat, const char* str) { log_write(cat, INFO, str); }
 
     inline void infol(Category cat, const char* str) { log_write(cat, INFO, str, '\n'); }
 
     template <typename... Args>
-    inline void info(Category cat, const char* fmt, const Args&... args)
-    {
-        log_write(cat, INFO, fmt::format(fmt, args...));
-    }
+    inline void info(Category cat, const char* fmt, const Args&... args) {
+        log_write(cat, INFO, '\0', fmt, args...); }
 
     template <typename... Args>
-    inline void infol(Category cat, const char* fmt, const Args&... args)
-    {
-        log_write(cat, INFO, fmt::format(fmt, args...), '\n');
-    }
+    inline void infol(Category cat, const char* fmt, const Args&... args) {
+        log_write(cat, INFO, '\n', fmt, args...); }
 }
 
 #endif//__LOGGER_HPP__

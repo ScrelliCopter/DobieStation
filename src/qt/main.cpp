@@ -14,6 +14,7 @@ int main(int argc, char** argv)
     QApplication::setOrganizationDomain("https://github.com/PSI-Rockin/DobieStation");
 
     infol(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
+    infol(CAT_MISC, "poop {:i}", "oops"); // type error
     info(CAT_MISC, "hi?");
     info(CAT_MISC, "hi!");
     infol(CAT_MISC, "hi.");
