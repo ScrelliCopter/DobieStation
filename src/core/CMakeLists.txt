@@ -73,7 +73,8 @@ set(SOURCES
     gscontext.cpp
     scheduler.cpp
     serialize.cpp
-    sif.cpp)
+    sif.cpp
+	logger.cpp)
 
 if (MSVC)
     enable_language(ASM_MASM)
@@ -144,7 +145,8 @@ set(HEADERS
     gscontext.hpp
     int128.hpp
     scheduler.hpp
-    sif.hpp)
+    sif.hpp
+	logger.hpp)
 
 # MSVC: Add assembly sources to project
 if (CMAKE_ASM_MASM_COMPILER_LOADED)
@@ -155,6 +157,7 @@ endif()
 add_library(${TARGET} ${SOURCES} ${HEADERS})
 add_library(Dobie::Core ALIAS ${TARGET})
 
+target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(${TARGET} Ext::libdeflate Threads::Threads)
 target_compile_options(${TARGET} PRIVATE ${DOBIE_FLAGS})
 
