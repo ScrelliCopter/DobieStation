@@ -19,6 +19,13 @@ int main(int argc, char** argv)
     warn(CAT_MISC, "hi!");
     trace_l(CAT_MISC, "hi.");
 
+    trace_l(CAT_MISC, "trace");
+    debug_l(CAT_MISC, "debug");
+    info_l(CAT_MISC, "info");
+    warn_l(CAT_MISC, "warn");
+    error_l(CAT_MISC, "error");
+    critical_l(CAT_MISC, "critical");
+
     QApplication a(argc, argv);
     auto window = unique_ptr<EmuWindow>(new EmuWindow());
 
