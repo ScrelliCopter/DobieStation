@@ -64,17 +64,17 @@ namespace logger
         }
     }
 
-#define LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT) \
+#define LOGGER_GENERATE_WRAPPER_FUNC(NAME, LVL) \
     inline void NAME(Category cat, const char* str) { \
-        log_write(cat, CAT, str); } \
+        log_write(cat, LVL, str); } \
     inline void NAME##_l(Category cat, const char* str) { \
-        log_write(cat, CAT, str, '\n'); } \
+        log_write(cat, LVL, str, '\n'); } \
     template <typename... Args> \
     inline void NAME(Category cat, const char* fmt, const Args&... args) { \
-        log_write(cat, CAT, '\0', fmt, args...); } \
+        log_write(cat, LVL, '\0', fmt, args...); } \
     template <typename... Args> \
     inline void NAME##_l(Category cat, const char* fmt, const Args&... args) { \
-        log_write(cat, CAT, '\n', fmt, args...); }
+        log_write(cat, LVL, '\n', fmt, args...); }
 
     LOGGER_GENERATE_WRAPPER_FUNC(trace, TRACE)
     LOGGER_GENERATE_WRAPPER_FUNC(debug, DEBUG)
