@@ -13,7 +13,8 @@ namespace logger
         CAT_IOP,
         CAT_IOP_DMA,
         CAT_IOP_TIMING,
-        CAT_COP,
+        CAT_COP0,
+        CAT_COP2,
         CAT_FPU,
         CAT_IPU,
         CAT_CDVD,
@@ -23,6 +24,7 @@ namespace logger
         CAT_GS,
         CAT_GS_R,
         CAT_GS_T,
+        CAT_GS_JIT,
         CAT_DMAC,
         CAT_SIO2,
         CAT_SIF,
@@ -33,7 +35,7 @@ namespace logger
         CAT_VU_JIT,
         CAT_VU_JIT64,
 
-        CAT_LAST = CAT_VU_JIT64
+        NUM_CATEGORIES
     };
 
     enum Level
