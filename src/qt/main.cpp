@@ -15,6 +15,12 @@ int main(int argc, char** argv)
 
     info_l(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
     error(CAT_MISC, "poop {:i}", "oops"); // type error
+    char text[24] = {'E', 'N', 'G', 'A', 'G', 'E', 'R', 'I', 'D', 'L', 'E', 'Y', 'M', 'O', 'T', 'H', 'E', 'R', 'F', 'U', 'C', 'K', 'E', 'R'};
+    critical_l(CAT_MISC, "{} {} {} {}",
+        fmt::basic_string_view<char>(text +  0, 6),
+        fmt::basic_string_view<char>(text +  6, 6),
+        fmt::basic_string_view<char>(text + 12, 6),
+        fmt::basic_string_view<char>(text + 18, 6));
     warn(CAT_MISC, "hi?");
     warn(CAT_MISC, "hi!");
     trace_l(CAT_EE, "hi.");
