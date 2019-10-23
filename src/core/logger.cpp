@@ -1,7 +1,10 @@
 #include "logger.hpp"
 #include <cstdio>
+#include <chrono>
+#include <fmt/chrono.h>
 
 using namespace logger;
+namespace chrono { using namespace std::chrono; }
 
 #define EC_RESET      "0"
 #define EC_BRIGHT     "1"
@@ -39,7 +42,7 @@ constexpr const char* level_esc(Level lvl)
     {
     case (TRACE):    return ESC(DIM);
     case (DEBUG):    return ESC(FG_BLUE);
-    case (INFO):     return ESC(RESET);
+    //case (INFO):     return ESC(RESET);
     case (WARN):     return ESC(FG_GREEN);
     case (ERROR):    return ESC(FG_RED);
     case (CRITICAL): return ESC2(BRIGHT, BG_RED);
@@ -84,6 +87,14 @@ constexpr const char* category_token(Category cat)
 }
 
 
+void write_date(FILE* f)
+{
+    auto now = chrono::high_resolution_clock::now();
+    auto ltime = chrono::system_clock::to_time_t(now);
+    auto frac_sec = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
+    fmt::print(stderr, "[{:%H:%M:%S}.{:03d}] ", *std::localtime(&ltime), frac_sec);
+}
+
 void logger::log_write(Category cat, Level lvl, const std::string& str, char eol)
 {
     fputs(level_esc(lvl), stderr);
@@ -93,11 +104,13 @@ void logger::log_write(Category cat, Level lvl, const std::string& str, char eol
 
     if (last_eol == '\n')
     {
+        write_date(stderr);
         fputs(category_token(cat), stderr);
     }
     else if (cat != last_cat)
     {
         putc('\n', stderr);
+        write_date(stderr);
         fputs(category_token(cat), stderr);
     }
 

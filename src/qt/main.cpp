@@ -15,7 +15,7 @@ int main(int argc, char** argv)
 
     info_l(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
     error(CAT_MISC, "poop {:i}", "oops"); // type error
-    char text[24] = {'E', 'N', 'G', 'A', 'G', 'E', 'R', 'I', 'D', 'L', 'E', 'Y', 'M', 'O', 'T', 'H', 'E', 'R', 'F', 'U', 'C', 'K', 'E', 'R'};
+    const char text[24] = {'E', 'N', 'G', 'A', 'G', 'E', 'R', 'I', 'D', 'L', 'E', 'Y', 'M', 'O', 'T', 'H', 'E', 'R', 'F', 'U', 'C', 'K', 'E', 'R'};
     critical_l(CAT_MISC, "{} {} {} {}",
         fmt::basic_string_view<char>(text +  0, 6),
         fmt::basic_string_view<char>(text +  6, 6),
@@ -32,33 +32,13 @@ int main(int argc, char** argv)
     error_l(CAT_MISC, "error");
     critical_l(CAT_MISC, "critical");
 
-    info(CAT_MISC,       "CAT_MISC");
-    info(CAT_EE,         "CAT_EE");
-    info(CAT_EE_TIMING,  "CAT_EE_TIMING");
-    info(CAT_IOP,        "CAT_IOP");
-    info(CAT_IOP_DMA,    "CAT_IOP_DMA");
-    info(CAT_IOP_TIMING, "CAT_IOP_TIMING");
-    info(CAT_COP0,       "CAT_COP0");
-    info(CAT_COP2,       "CAT_COP2");
-    info(CAT_FPU,        "CAT_FPU");
-    info(CAT_IPU,        "CAT_IPU");
-    info(CAT_CDVD,       "CAT_CDVD");
-    info(CAT_PAD,        "CAT_PAD");
-    info(CAT_SPU,        "CAT_SPU");
-    info(CAT_GIF,        "CAT_GIF");
-    info(CAT_GS,         "CAT_GS");
-    info(CAT_GS_R,       "CAT_GS_R");
-    info(CAT_GS_T,       "CAT_GS_T");
-    info(CAT_GS_JIT,     "CAT_GS_JIT");
-    info(CAT_DMAC,       "CAT_DMAC");
-    info(CAT_SIO2,       "CAT_SIO2");
-    info(CAT_VIF,        "CAT_VIF");
-    info(CAT_SIF,        "CAT_SIF");
-    info(CAT_VU,         "CAT_VU");
-    info(CAT_VU0,        "CAT_VU0");
-    info(CAT_VU1,        "CAT_VU1");
-    info(CAT_VU_JIT,     "CAT_VU_JIT");
-    info_l(CAT_VU_JIT64,   "CAT_VU_JIT64");
+    const char* cat_names[] = {"CAT_MISC", "CAT_EE", "CAT_EE_TIMING", "CAT_IOP", "CAT_IOP_DMA", "CAT_IOP_TIMING", "CAT_COP0", "CAT_COP2", "CAT_FPU", "CAT_IPU", "CAT_CDVD", "CAT_PAD", "CAT_SPU", "CAT_GIF", "CAT_GS", "CAT_GS_R", "CAT_GS_T", "CAT_GS_JIT", "CAT_DMAC", "CAT_SIO2", "CAT_VIF", "CAT_SIF", "CAT_VU", "CAT_VU0", "CAT_VU1", "CAT_VU_JIT", "CAT_VU_JIT64"};
+    for (int i = 0; i < NUM_CATEGORIES; ++i)
+    {
+        struct timespec wait = {0, 100000000};
+        nanosleep(&wait, &wait);
+        info_l(static_cast<Category>(i), cat_names[i]);
+    }
 
     QApplication a(argc, argv);
     auto window = unique_ptr<EmuWindow>(new EmuWindow());
