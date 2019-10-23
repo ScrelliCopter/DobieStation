@@ -95,7 +95,7 @@ void write_date(FILE* f)
     fmt::print(stderr, "[{:%H:%M:%S}.{:03d}] ", *std::localtime(&ltime), frac_sec);
 }
 
-void logger::log_write(Category cat, Level lvl, const std::string& str, char eol)
+void logger::log_write(Category cat, Level lvl, const char* str, char eol)
 {
     static Category last_cat = NUM_CATEGORIES;
     static char     last_eol = '\n';
@@ -121,7 +121,8 @@ void logger::log_write(Category cat, Level lvl, const std::string& str, char eol
 
     fputs(ESC(RESET), stderr);
     fputs(level_esc(lvl), stderr);
-    fputs(str.c_str(), stderr);
+    if (str)
+        fputs(str, stderr);
     fputs(ESC(RESET), stderr);
     if (eol)
         putc(eol, stderr);

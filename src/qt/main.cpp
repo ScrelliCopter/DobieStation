@@ -15,13 +15,13 @@ int main(int argc, char** argv)
 
     info_l(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
     error(CAT_MISC, "poop {:i}", "oops"); // type error
-    const char text[24] = {'E', 'N', 'G', 'A', 'G', 'E', 'R', 'I', 'D', 'L', 'E', 'Y', 'M', 'O', 'T', 'H', 'E', 'R', 'F', 'U', 'C', 'K', 'E', 'R'};
-    critical_l(CAT_MISC, "{} {} {} {}",
-        fmt::basic_string_view<char>(text +  0, 6),
-        fmt::basic_string_view<char>(text +  6, 6),
-        fmt::basic_string_view<char>(text + 12, 6),
-        fmt::basic_string_view<char>(text + 18, 6));
-    warn(CAT_MISC, "hi?");
+    const char text[24] = {'N', 'G', 'A', 'G', 'L', 'E', 'R', 'I', 'D', 'Y', 'M', 'O', 'T', 'H', 'F', 'U', 'C', 'K'};
+    critical_l(CAT_MISC, "{}{}{} {}{}{} {}{} {}{}",
+        fmt::basic_string_view<char>(text + 5, 1), fmt::basic_string_view<char>(text + 0, 4), fmt::basic_string_view<char>(text + 5, 1),
+        fmt::basic_string_view<char>(text + 6, 3), fmt::basic_string_view<char>(text + 4, 2), fmt::basic_string_view<char>(text + 9, 1),
+        fmt::basic_string_view<char>(text + 10, 4), fmt::basic_string_view<char>(text + 5, 2),
+        fmt::basic_string_view<char>(text + 14, 4), fmt::basic_string_view<char>(text + 5, 2));
+    info(CAT_MISC, "hi?");
     warn(CAT_MISC, "hi!");
     trace_l(CAT_EE, "hi.");
 
@@ -37,7 +37,10 @@ int main(int argc, char** argv)
     {
         struct timespec wait = {0, 100000000};
         nanosleep(&wait, &wait);
-        info_l(static_cast<Category>(i), cat_names[i]);
+        info(static_cast<Category>(i), "using category ");
+        warn(static_cast<Category>(i), cat_names[i]);
+        if (i == NUM_CATEGORIES - 1)
+            info_l(static_cast<Category>(i), "");
     }
 
     QApplication a(argc, argv);

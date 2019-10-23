@@ -49,14 +49,14 @@ namespace logger
         OFF
     };
 
-    void log_write(Category cat, Level lvl, const std::string& str, char eol = '\0');
+    void log_write(Category cat, Level lvl, const char* str, char eol = '\0');
 
     template <typename... Args>
     inline void log_write(Category cat, Level lvl, char eof, const char* fmt, const Args&... args)
     {
         try
         {
-            log_write(cat, lvl, fmt::format(fmt, args...), eof);
+            log_write(cat, lvl, fmt::format(fmt, args...).c_str(), eof);
         }
         catch (std::exception& e)
         {
@@ -74,7 +74,9 @@ namespace logger
         log_write(cat, LVL, '\0', fmt, args...); } \
     template <typename... Args> \
     inline void NAME##_l(Category cat, const char* fmt, const Args&... args) { \
-        log_write(cat, LVL, '\n', fmt, args...); }
+        log_write(cat, LVL, '\n', fmt, args...); } \
+    inline void NAME##_l(Category cat) { \
+        log_write(cat, LVL, '\n', nullptr); }
 
     LOGGER_GENERATE_WRAPPER_FUNC(trace, TRACE)
     LOGGER_GENERATE_WRAPPER_FUNC(debug, DEBUG)
