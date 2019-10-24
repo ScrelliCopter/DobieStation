@@ -4,7 +4,8 @@
 #include <array>
 #include <tuple>
 #include <QLabel>
-#include <QSlider>
+#include <QRadioButton>
+#include <QButtonGroup>
 
 
 static constexpr std::array<std::tuple<logger::Category, const char*>, logger::NUM_CATEGORIES> cat_names = {
@@ -57,14 +58,18 @@ LoggingWindow::LoggingWindow(QWidget* parent) :
     for (size_t i = 0; i < logger::NUM_CATEGORIES; ++i)
     {
         auto label = new QLabel(std::get<1>(cat_names[i]), this);
-        auto slider = new QSlider(Qt::Horizontal, this);
-        slider->setRange(0, logger::OFF);
-        slider->setSingleStep(1);
-        slider->setTickInterval(1);
-        slider->setTickPosition(QSlider::TicksAbove);
-
         layout.addWidget(label, (int)i + 1, 0);
-        layout.addWidget(slider, (int)i + 1, 1, 1, levels.size());
+
+        auto btn_group = new QButtonGroup(this);
+        for (size_t j = 0; j < levels.size(); ++j)
+        {
+            auto button = new QRadioButton(this);
+            if (!j)
+                button->setChecked(true);
+
+            btn_group->addButton(button, (int)j);
+            layout.addWidget(button, (int)i + 1, (int)j + 1);
+        }
     }
 
     layout.setColumnStretch(0, 0);
