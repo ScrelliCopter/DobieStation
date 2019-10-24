@@ -7,12 +7,8 @@ using namespace std;
 using namespace logger;
 
 
-int main(int argc, char** argv)
+void test_logger()
 {
-    QApplication::setOrganizationName("PSI");
-    QApplication::setApplicationName("DobieStation");
-    QApplication::setOrganizationDomain("https://github.com/PSI-Rockin/DobieStation");
-
     info_l(CAT_MISC, "test {0}:{1:04X} {0}", "test", 10);
     error(CAT_MISC, "poop {:i}", "oops"); // type error
     const char text[24] = {'N', 'G', 'A', 'G', 'L', 'E', 'R', 'I', 'D', 'Y', 'M', 'O', 'T', 'H', 'F', 'U', 'C', 'K'};
@@ -42,7 +38,13 @@ int main(int argc, char** argv)
         if (i == NUM_CATEGORIES - 1)
             info_l(static_cast<Category>(i), "");
     }
+}
 
+int main(int argc, char** argv)
+{
+    QApplication::setOrganizationName("PSI");
+    QApplication::setApplicationName("DobieStation");
+    QApplication::setOrganizationDomain("https://github.com/PSI-Rockin/DobieStation");
     QApplication a(argc, argv);
     auto window = unique_ptr<EmuWindow>(new EmuWindow());
 
