@@ -12,6 +12,7 @@
 
 #include "emuwindow.hpp"
 #include "settingswindow.hpp"
+#include "loggingwindow.hpp"
 #include "renderwidget.hpp"
 #include "gamelistwidget.hpp"
 #include "bios.hpp"
@@ -334,9 +335,12 @@ void EmuWindow::create_menu()
 
     auto settings_action = new QAction(tr("&Settings"), this);
     connect(settings_action, &QAction::triggered, this, &EmuWindow::open_settings_window);
+    auto logging_action = new QAction(tr("&Logging"), this);
+    connect(logging_action, &QAction::triggered, this, &EmuWindow::open_logging_window);
 
     options_menu = menuBar()->addMenu(tr("&Options"));
     options_menu->addAction(settings_action);
+    options_menu->addAction(logging_action);
 
     auto ignore_aspect_ratio_action =
     new QAction(tr("&Ignore aspect ratio"), this);
@@ -409,6 +413,15 @@ void EmuWindow::open_settings_window()
 
     settings_window->show();
     settings_window->raise();
+}
+
+void EmuWindow::open_logging_window()
+{
+    if (!logging_window)
+        logging_window = new LoggingWindow(this);
+
+    logging_window->show();
+    logging_window->raise();
 }
 
 void EmuWindow::closeEvent(QCloseEvent *event)

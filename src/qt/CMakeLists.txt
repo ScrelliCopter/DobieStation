@@ -17,6 +17,7 @@ set(SOURCES
     emuthread.cpp
     emuwindow.cpp
     settingswindow.cpp
+    loggingwindow.cpp
     renderwidget.cpp
     gamelistwidget.cpp
     main.cpp
@@ -27,6 +28,7 @@ set(HEADERS
     emuthread.hpp
     emuwindow.hpp
     settingswindow.hpp
+    loggingwindow.hpp
     renderwidget.hpp
     gamelistwidget.hpp
     settings.hpp

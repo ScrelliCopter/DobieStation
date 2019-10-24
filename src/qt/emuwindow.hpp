@@ -11,6 +11,7 @@
 #include "../core/emulator.hpp"
 
 class SettingsWindow;
+class LoggingWindow;
 class RenderWidget;
 
 class EmuWindow : public QMainWindow
@@ -39,6 +40,7 @@ class EmuWindow : public QMainWindow
         RenderWidget* render_widget;
 
         SettingsWindow* settings_window = nullptr;
+        LoggingWindow* logging_window = nullptr;
 
         void set_vu1_mode();
         void set_ee_mode();
@@ -55,6 +57,7 @@ class EmuWindow : public QMainWindow
 
         bool load_bios();
         void open_settings_window();
+        void open_logging_window();
         void closeEvent(QCloseEvent *event) override;
         void keyPressEvent(QKeyEvent *event) override;
         void keyReleaseEvent(QKeyEvent *event) override;
