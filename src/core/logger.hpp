@@ -46,7 +46,9 @@ namespace logger
         WARN,
         ERROR,
         CRITICAL,
-        OFF
+        OFF,
+
+        NUM_LEVELS
     };
 
     void log_write(Category cat, Level lvl, const char* str, char eol = '\0');

@@ -7,8 +7,6 @@
 #include <QSlider>
 
 
-namespace logger { constexpr int NUM_LEVELS = logger::OFF + 1; }
-
 static constexpr std::array<std::tuple<logger::Category, const char*>, logger::NUM_CATEGORIES> cat_names = {
     std::make_tuple(logger::CAT_MISC, "Misc"),
 
