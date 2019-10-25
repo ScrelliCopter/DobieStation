@@ -1,6 +1,6 @@
 #include "loggingwindow.hpp"
 
-#include <logger.hpp>
+#include <core/logger.hpp>
 #include <array>
 #include <tuple>
 #include <QLabel>

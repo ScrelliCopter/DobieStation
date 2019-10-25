@@ -1,7 +1,7 @@
 #include <QApplication>
 #include <memory>
 #include "emuwindow.hpp"
-#include <logger.hpp>
+#include <core/logger.hpp>
 
 using namespace std;
 using namespace logger;
