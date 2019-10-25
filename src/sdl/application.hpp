@@ -9,7 +9,6 @@
 
 typedef union SDL_Event SDL_Event;
 typedef struct _SDL_GameController SDL_GameController;
-using std::chrono::high_resolution_clock;
 
 class Application
 {
@@ -20,8 +19,7 @@ private:
 
     bool running;
     long fps_counter;
-    static constexpr auto sec = std::chrono::seconds(1);
-    high_resolution_clock::time_point next_tick;
+    std::chrono::high_resolution_clock::time_point next_tick;
 
     SDL_GameController* pad;
     int32_t joy_id;

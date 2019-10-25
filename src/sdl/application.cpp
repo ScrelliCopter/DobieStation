@@ -1,6 +1,8 @@
 #include "application.hpp"
 #include <SDL.h>
 
+namespace chrono { using namespace std::chrono; }
+
 
 Application::Application() :
     running(false), fps_counter(0),
@@ -84,7 +86,7 @@ bool Application::init(Params& params)
     if (!window.open())
         return false;
 
-    next_tick = high_resolution_clock::now() + sec;
+    next_tick = chrono::high_resolution_clock::now() + chrono::seconds(1);
     return running = true;
 }
 
@@ -98,13 +100,13 @@ void Application::free()
 bool Application::frame()
 {
     // fps counter
-    if (high_resolution_clock::now() >= next_tick)
+    if (chrono::high_resolution_clock::now() >= next_tick)
     {
         char window_title[256];
         snprintf(window_title, sizeof(window_title), "%li FPS", fps_counter);
         window.set_title(window_title);
 
-        next_tick += sec;
+        next_tick += chrono::seconds(1);
         fps_counter = 0;
     }
 

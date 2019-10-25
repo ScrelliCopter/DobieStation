@@ -1,6 +1,6 @@
 set(TARGET DobieSDL)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(SDL2 REQUIRED)
 

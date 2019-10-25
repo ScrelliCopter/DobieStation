@@ -8,10 +8,13 @@
 
 long BiosReader::match(const uint8_t* match_array, size_t match_len) const
 {
+    /*
     auto res = std::search(m_data.begin(), m_data.end(),
         std::boyer_moore_searcher(match_array, match_array + match_len));
 
     return res != m_data.end() ? res - m_data.begin() : NOMATCH;
+    */
+    return NOMATCH;
 }
 
 long BiosReader::match(const char* match_str) const
