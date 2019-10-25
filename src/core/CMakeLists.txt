@@ -157,7 +157,7 @@ endif()
 add_library(${TARGET} ${SOURCES} ${HEADERS})
 add_library(Dobie::Core ALIAS ${TARGET})
 
-target_include_directories(${TARGET} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 target_link_libraries(${TARGET} fmt::fmt Ext::libdeflate Threads::Threads)
 target_compile_options(${TARGET} PRIVATE ${DOBIE_FLAGS})
 
