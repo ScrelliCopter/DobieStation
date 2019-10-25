@@ -33,6 +33,8 @@ set(HEADERS
     bios.hpp)
 
 add_executable(${TARGET} ${SOURCES} ${HEADERS})
+
+target_include_directories(${TARGET} PRIVATE ${CMAKE_SOURCE_DIR}/src)
 set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "DobieStation") # Output as "DobieStation" instead of "DobieQt"
 target_compile_options(${TARGET} PRIVATE ${DOBIE_FLAGS})
 target_link_libraries(${TARGET} Dobie::Core Qt5::Core Qt5::Widgets)
