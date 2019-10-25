@@ -4,7 +4,7 @@
 #include "params.hpp"
 #include "bios.hpp"
 #include "window.hpp"
-#include <emulator.hpp>
+#include <core/emulator.hpp>
 #include <chrono>
 
 typedef union SDL_Event SDL_Event;
