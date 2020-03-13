@@ -3,8 +3,8 @@
 #include <core/logger.hpp>
 #include <array>
 #include <tuple>
+#include "tickmarkslider.hpp"
 #include <QLabel>
-#include <QSlider>
 
 using namespace logger;
 
@@ -42,33 +42,40 @@ static constexpr std::array<std::tuple<logger::Category, const char*>, logger::N
     std::make_tuple(logger::CAT_VU_JIT,   "VU JIT"),
     std::make_tuple(logger::CAT_VU_JIT64, "VU JIT64")};
 
-static constexpr std::array<std::tuple<logger::Level, const char*>, logger::NUM_LEVELS> levels = {
-    std::make_tuple(logger::TRACE,    "Trace"),
-    std::make_tuple(logger::DEBUG,    "Debug"),
-    std::make_tuple(logger::INFO,     "Info"),
-    std::make_tuple(logger::WARN,     "Warning"),
-    std::make_tuple(logger::ERROR,    "Error"),
+const std::array<std::tuple<logger::Level, QString>, logger::NUM_LEVELS> levels = {
+    std::make_tuple(logger::OFF,      "Off"),
     std::make_tuple(logger::CRITICAL, "Critical"),
-    std::make_tuple(logger::OFF,      "Off")};
+    std::make_tuple(logger::ERROR,    "Error"),
+    std::make_tuple(logger::WARN,     "Warning"),
+    std::make_tuple(logger::INFO,     "Info"),
+    std::make_tuple(logger::DEBUG,    "Debug"),
+    std::make_tuple(logger::TRACE,    "Trace")};
 
 
 LoggingWindow::LoggingWindow(QWidget* parent) :
     QWidget(parent, Qt::Tool)
 {
-    for (size_t i = 0; i < levels.size(); ++i)
-        layout.addWidget(new QLabel(std::get<1>(levels[i])), 0, (int)i + 1);
+    auto* tick_text_func = static_cast<TickmarkSlider::TickTextFunc>([](int i) -> const QString&
+    {
+        static const auto empty = QString();
+        if (i < 0 || (unsigned)i >= levels.size())
+            return empty;
+        return std::get<1>(levels[(unsigned)i]);
+    });
 
     for (size_t i = 0; i < logger::NUM_CATEGORIES; ++i)
     {
         auto label = new QLabel(std::get<1>(cat_names[i]), this);
-        auto slider = new QSlider(Qt::Horizontal, this);
+        //auto slider = new QSlider(Qt::Horizontal, this);
+        auto slider = new TickmarkSlider(Qt::Horizontal, this);
         slider->setRange(0, logger::OFF);
         slider->setSingleStep(1);
         slider->setTickInterval(1);
         slider->setTickPosition(QSlider::TicksAbove);
+        slider->setTickTextFunc(tick_text_func);
 
-        layout.addWidget(label, (int)i + 1, 0);
-        layout.addWidget(slider, (int)i + 1, 1, 1, levels.size());
+        layout.addWidget(label, (int)i, 0);
+        layout.addWidget(slider, (int)i, 1, 1, 1);
     }
 
     layout.setColumnStretch(0, 0);
