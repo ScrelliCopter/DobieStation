@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QFrame>
 #include <QPushButton>
+#include <QEvent>
 
 using namespace logger;
 
@@ -86,6 +87,21 @@ LoggingWindow::LoggingWindow(QWidget* parent) :
     setLayout(&layout);
 }
 
+class ScrollEater : public QObject
+{
+protected:
+    bool eventFilter(QObject* o, QEvent* e) override
+    {
+        if (e->type() == QEvent::Wheel)
+            return true;
+        else
+            return QObject::eventFilter(o, e);
+    }
+
+public:
+    explicit ScrollEater(QObject* parent = nullptr) : QObject(parent) {}
+};
+
 QWidget* LoggingWindow::create_view(QWidget* parent)
 {
     auto* tick_text_func = static_cast<TickmarkSlider::TickTextFunc>([](int i) -> const QString&
@@ -100,6 +116,7 @@ QWidget* LoggingWindow::create_view(QWidget* parent)
     widget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
 
     auto layout = new QGridLayout(widget);
+    auto filter = new ScrollEater(widget);
     bool first_after_split = true;
     for (size_t i = 0; i < cat_names.size(); ++i)
     {
@@ -129,8 +146,11 @@ QWidget* LoggingWindow::create_view(QWidget* parent)
             slider = new QSlider(Qt::Horizontal, widget);
         }
 
+        slider->setFocusPolicy(Qt::StrongFocus);
+        slider->installEventFilter(filter);
         slider->setRange(0, levels.size() - 1);
         slider->setSingleStep(1);
+        slider->setPageStep(1);
         slider->setTickInterval(1);
         slider->setTickPosition(QSlider::TicksAbove);
 
