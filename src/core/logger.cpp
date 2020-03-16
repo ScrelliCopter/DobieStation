@@ -37,7 +37,6 @@ namespace chrono { using namespace std::chrono; }
 
 constexpr const char* level_esc(Level lvl)
 {
-    //TODO: switch in constexpr a c++14 extension
     switch (lvl)
     {
     case (TRACE):    return ESC(DIM);
