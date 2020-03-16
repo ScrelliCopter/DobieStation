@@ -12,6 +12,7 @@
 #include <QFrame>
 #include <QPushButton>
 #include <QEvent>
+#include <QKeyEvent>
 
 using namespace logger;
 
@@ -94,8 +95,14 @@ protected:
     {
         if (e->type() == QEvent::Wheel)
             return true;
-        else
-            return QObject::eventFilter(o, e);
+        if (e->type() == QEvent::KeyPress)
+        {
+            auto& keyEvent = *dynamic_cast<QKeyEvent*>(e);
+            if (keyEvent.key() == Qt::Key_Up || keyEvent.key() == Qt::Key_Down)
+                return true;
+        }
+
+        return QObject::eventFilter(o, e);
     }
 
 public:
