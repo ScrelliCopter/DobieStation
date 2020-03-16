@@ -97,6 +97,8 @@ QWidget* LoggingWindow::create_view(QWidget* parent)
     });
 
     auto widget = new QWidget(parent);
+    widget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
+
     auto layout = new QGridLayout(widget);
     bool first_after_split = true;
     for (size_t i = 0; i < cat_names.size(); ++i)
