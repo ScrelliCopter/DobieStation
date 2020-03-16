@@ -27,15 +27,20 @@ const std::array<std::tuple<logger::Category, QString>, logger::NUM_CATEGORIES> 
     std::make_tuple(logger::CAT_IOP_DMA,    "IOP DMA"),
     std::make_tuple(logger::CAT_IOP_TIMING, "IOP Timing"),
 
+    std::make_tuple(logger::CAT_COP0, "COP0"),
+    std::make_tuple(logger::CAT_FPU,  "FPU"),
+    std::make_tuple(logger::CAT_COP2, "COP2"),
+
     std::make_tuple(logger::CAT_CDVD, "CDVD"),
     std::make_tuple(logger::CAT_IPU,  "IPU"),
     std::make_tuple(logger::CAT_PAD,  "PAD"),
     std::make_tuple(logger::CAT_SPU,  "SPU"),
     std::make_tuple(logger::CAT_GIF,  "GIF"),
 
-    std::make_tuple(logger::CAT_GS,   "GS"),
-    std::make_tuple(logger::CAT_GS_R, "GS_r"),
-    std::make_tuple(logger::CAT_GS_T, "GS_t"),
+    std::make_tuple(logger::CAT_GS,     "GS"),
+    std::make_tuple(logger::CAT_GS_R,   "GS Registers"),
+    std::make_tuple(logger::CAT_GS_T,   "GS Thread"),
+    std::make_tuple(logger::CAT_GS_JIT, "GS JIT"),
 
     std::make_tuple(logger::CAT_DMAC, "DMAC"),
     std::make_tuple(logger::CAT_SIO2, "SIO2"),
@@ -92,11 +97,11 @@ QWidget* LoggingWindow::create_view(QWidget* parent)
 
     auto widget = new QWidget(parent);
     auto layout = new QGridLayout(widget);
-    for (size_t i = 0; i < logger::NUM_CATEGORIES; ++i)
+    for (size_t i = 0; i < cat_names.size(); ++i)
     {
         auto label = new QLabel(std::get<1>(cat_names[i]), widget);
         auto slider = new TickmarkSlider(Qt::Horizontal, widget);
-        slider->setRange(0, logger::NUM_LEVELS - 1);
+        slider->setRange(0, levels.size() - 1);
         slider->setSingleStep(1);
         slider->setTickInterval(1);
         slider->setTickPosition(QSlider::TicksAbove);

@@ -68,8 +68,8 @@ constexpr const char* category_token(Category cat)
     case (CAT_SPU):        return "SPU: ";
     case (CAT_GIF):        return "GIF: ";
     case (CAT_GS):         return "GS: ";
-    case (CAT_GS_R):       return "GS_r: ";
-    case (CAT_GS_T):       return "GS_t: ";
+    case (CAT_GS_R):       return "GS Registers: ";
+    case (CAT_GS_T):       return "GS Thread: ";
     case (CAT_GS_JIT):     return "GS JIT: ";
     case (CAT_DMAC):       return "DMAC: ";
     case (CAT_SIO2):       return "SIO2: ";
