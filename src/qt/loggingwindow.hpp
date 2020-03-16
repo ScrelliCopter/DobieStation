@@ -2,13 +2,15 @@
 #define LOGGINGWINDOW_HPP
 
 #include <QWidget>
-#include <QGridLayout>
+#include <QVBoxLayout>
 
 class LoggingWindow : public QWidget
 {
     Q_OBJECT
 private:
-    QGridLayout layout;
+    QVBoxLayout layout;
+
+    static QWidget* create_view(QWidget* parent = nullptr);
 
 public:
     explicit LoggingWindow(QWidget* parent = nullptr);

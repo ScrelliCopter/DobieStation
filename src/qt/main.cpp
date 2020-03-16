@@ -9,11 +9,11 @@ int main(int argc, char** argv)
     QApplication::setApplicationName("DobieStation");
     QApplication::setOrganizationDomain("https://github.com/PSI-Rockin/DobieStation");
     QApplication a(argc, argv);
-    auto window = std::unique_ptr<EmuWindow>(new EmuWindow());
+    auto window = std::make_unique<EmuWindow>();
 
     if (window->init(argc, argv))
         return 1;
 
-    a.exec();
+    QApplication::exec();
     return 0;
 }
