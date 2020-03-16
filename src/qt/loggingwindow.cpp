@@ -9,7 +9,7 @@
 #include <QScrollArea>
 #include "tickmarkslider.hpp"
 #include <QLabel>
-#include <QSpacerItem>
+#include <QFrame>
 #include <QPushButton>
 
 using namespace logger;
@@ -17,36 +17,37 @@ using namespace logger;
 void test_logger();
 
 
-const std::array<std::tuple<logger::Category, QString>, logger::NUM_CATEGORIES> cat_names = {
+#define SPLITTER std::make_tuple(logger::NUM_CATEGORIES, QString())
+const std::array<std::tuple<logger::Category, QString>, logger::NUM_CATEGORIES + 7> cat_names = {
     std::make_tuple(logger::CAT_MISC, "Misc"),
-
+    SPLITTER,
     std::make_tuple(logger::CAT_EE,        "EE"),
     std::make_tuple(logger::CAT_EE_TIMING, "EE Timing"),
-
-    std::make_tuple(logger::CAT_IOP,        "IOP"),
-    std::make_tuple(logger::CAT_IOP_DMA,    "IOP DMA"),
-    std::make_tuple(logger::CAT_IOP_TIMING, "IOP Timing"),
-
+    SPLITTER,
     std::make_tuple(logger::CAT_COP0, "COP0"),
     std::make_tuple(logger::CAT_FPU,  "FPU"),
     std::make_tuple(logger::CAT_COP2, "COP2"),
-
+    SPLITTER,
+    std::make_tuple(logger::CAT_IOP,        "IOP"),
+    std::make_tuple(logger::CAT_IOP_DMA,    "IOP DMA"),
+    std::make_tuple(logger::CAT_IOP_TIMING, "IOP Timing"),
+    SPLITTER,
     std::make_tuple(logger::CAT_CDVD, "CDVD"),
     std::make_tuple(logger::CAT_IPU,  "IPU"),
     std::make_tuple(logger::CAT_PAD,  "PAD"),
     std::make_tuple(logger::CAT_SPU,  "SPU"),
     std::make_tuple(logger::CAT_GIF,  "GIF"),
-
+    SPLITTER,
     std::make_tuple(logger::CAT_GS,     "GS"),
     std::make_tuple(logger::CAT_GS_R,   "GS Registers"),
     std::make_tuple(logger::CAT_GS_T,   "GS Thread"),
     std::make_tuple(logger::CAT_GS_JIT, "GS JIT"),
-
+    SPLITTER,
     std::make_tuple(logger::CAT_DMAC, "DMAC"),
     std::make_tuple(logger::CAT_SIO2, "SIO2"),
     std::make_tuple(logger::CAT_SIF,  "SIF"),
     std::make_tuple(logger::CAT_VIF,  "VIF"),
-
+    SPLITTER,
     std::make_tuple(logger::CAT_VU,       "VU"),
     std::make_tuple(logger::CAT_VU0,      "VU0"),
     std::make_tuple(logger::CAT_VU1,      "VU1"),
@@ -97,17 +98,41 @@ QWidget* LoggingWindow::create_view(QWidget* parent)
 
     auto widget = new QWidget(parent);
     auto layout = new QGridLayout(widget);
+    bool first_after_split = true;
     for (size_t i = 0; i < cat_names.size(); ++i)
     {
+        // Treat NUM_CATEGORIES as a splitter
+        if (std::get<0>(cat_names[i]) == NUM_CATEGORIES)
+        {
+            auto splitter = new QFrame(widget);
+            splitter->setFrameShape(QFrame::HLine);
+            splitter->setFrameShadow(QFrame::Sunken);
+            layout->addWidget(splitter, (int)i, 0, 1, 2);
+            first_after_split = true;
+            continue;
+        }
+
         auto label = new QLabel(std::get<1>(cat_names[i]), widget);
-        auto slider = new TickmarkSlider(Qt::Horizontal, widget);
+        QSlider* slider;
+        if (first_after_split)
+        {
+            auto tm_slider = new TickmarkSlider(Qt::Horizontal, widget);
+            tm_slider->setTickTextFunc(tick_text_func);
+
+            slider = tm_slider;
+            first_after_split = false;
+        }
+        else
+        {
+            slider = new QSlider(Qt::Horizontal, widget);
+        }
+
         slider->setRange(0, levels.size() - 1);
         slider->setSingleStep(1);
         slider->setTickInterval(1);
         slider->setTickPosition(QSlider::TicksAbove);
-        slider->setTickTextFunc(tick_text_func);
 
-        layout->addWidget(label, (int)i, 0);
+        layout->addWidget(label, (int)i, 0, Qt::AlignBottom);
         layout->addWidget(slider, (int)i, 1, 1, 1);
     }
     layout->setColumnStretch(0, 0);
