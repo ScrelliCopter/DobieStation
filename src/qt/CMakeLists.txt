@@ -17,7 +17,6 @@ set(SOURCES
     emuthread.cpp
     emuwindow.cpp
     settingswindow.cpp
-    tickmarkslider.cpp
     loggingwindow.cpp
     renderwidget.cpp
     gamelistwidget.cpp
@@ -29,7 +28,6 @@ set(HEADERS
     emuthread.hpp
     emuwindow.hpp
     settingswindow.hpp
-    tickmarkslider.hpp
     loggingwindow.hpp
     renderwidget.hpp
     gamelistwidget.hpp

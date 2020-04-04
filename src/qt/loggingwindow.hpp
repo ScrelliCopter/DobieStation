@@ -10,7 +10,7 @@ class LoggingWindow : public QWidget
 private:
     QVBoxLayout layout;
 
-    static QWidget* create_view(QWidget* parent = nullptr);
+    static QLayout* create_view(QWidget* parent = nullptr);
 
 public:
     explicit LoggingWindow(QWidget* parent = nullptr);

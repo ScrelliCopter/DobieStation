@@ -6,13 +6,11 @@
 
 #include <QGridLayout>
 #include <QHBoxLayout>
-#include <QScrollArea>
-#include "tickmarkslider.hpp"
-#include <QLabel>
+#include <QGroupBox>
 #include <QFrame>
+#include <QLabel>
+#include <QComboBox>
 #include <QPushButton>
-#include <QEvent>
-#include <QKeyEvent>
 
 using namespace logger;
 
@@ -20,9 +18,9 @@ void test_logger();
 
 
 #define SPLITTER std::make_tuple(logger::NUM_CATEGORIES, QString())
-const std::array<std::tuple<logger::Category, QString>, logger::NUM_CATEGORIES + 7> cat_names = {
+const std::array<std::tuple<logger::Category, QString>, logger::NUM_CATEGORIES + 6> cat_names = {
     std::make_tuple(logger::CAT_MISC, "Misc"),
-    SPLITTER,
+    //SPLITTER,
     std::make_tuple(logger::CAT_EE,        "EE"),
     std::make_tuple(logger::CAT_EE_TIMING, "EE Timing"),
     SPLITTER,
@@ -69,11 +67,10 @@ const std::array<std::tuple<logger::Level, QString>, logger::NUM_LEVELS> levels 
 LoggingWindow::LoggingWindow(QWidget* parent) :
     QWidget(parent, Qt::Tool)
 {
-    auto scroll_view = new QScrollArea(this);
-    auto scroll_widget = create_view(this);
-    scroll_view->setWidget(scroll_widget);
-    scroll_view->setWidgetResizable(true);
-    layout.addWidget(scroll_view, 1);
+    auto gbox = new QGroupBox(tr("Log level settings"), this);
+    auto gbox_layout = create_view(gbox);
+    gbox->setLayout(gbox_layout);
+    layout.addWidget(gbox);
 
     auto button_box = new QHBoxLayout;
     auto btn_test = new QPushButton("Test", this);
@@ -88,85 +85,52 @@ LoggingWindow::LoggingWindow(QWidget* parent) :
     setLayout(&layout);
 }
 
-class ScrollEater : public QObject
+QLayout* LoggingWindow::create_view(QWidget* parent)
 {
-protected:
-    bool eventFilter(QObject* o, QEvent* e) override
-    {
-        if (e->type() == QEvent::Wheel)
-            return true;
-        if (e->type() == QEvent::KeyPress)
-        {
-            auto& keyEvent = *dynamic_cast<QKeyEvent*>(e);
-            if (keyEvent.key() == Qt::Key_Up || keyEvent.key() == Qt::Key_Down)
-                return true;
-        }
+    constexpr int num_columns = 3;
 
-        return QObject::eventFilter(o, e);
-    }
-
-public:
-    explicit ScrollEater(QObject* parent = nullptr) : QObject(parent) {}
-};
-
-QWidget* LoggingWindow::create_view(QWidget* parent)
-{
-    auto* tick_text_func = static_cast<TickmarkSlider::TickTextFunc>([](int i) -> const QString&
-    {
-        static const auto empty = QString();
-        if (i < 0 || (unsigned)i >= levels.size())
-            return empty;
-        return std::get<1>(levels[(unsigned)i]);
-    });
-
-    auto widget = new QWidget(parent);
-    widget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Maximum);
-
-    auto layout = new QGridLayout(widget);
-    auto filter = new ScrollEater(widget);
-    bool first_after_split = true;
-    for (size_t i = 0; i < cat_names.size(); ++i)
+    auto layout = new QGridLayout(parent);
+    int row = 0, column = 0;
+    for (const auto& category : cat_names)
     {
         // Treat NUM_CATEGORIES as a splitter
-        if (std::get<0>(cat_names[i]) == NUM_CATEGORIES)
+        if (std::get<0>(category) == NUM_CATEGORIES)
         {
-            auto splitter = new QFrame(widget);
+            auto splitter = new QFrame(parent);
             splitter->setFrameShape(QFrame::HLine);
             splitter->setFrameShadow(QFrame::Sunken);
-            layout->addWidget(splitter, (int)i, 0, 1, 2);
-            first_after_split = true;
+
+            // Add splitter to new row
+            if (column)
+                ++row;
+            layout->addWidget(splitter, row++, 0, 1, num_columns * 2);
+            column = 0;
             continue;
         }
 
-        auto label = new QLabel(std::get<1>(cat_names[i]), widget);
-        QSlider* slider;
-        if (first_after_split)
+        auto label = new QLabel(std::get<1>(category), parent);
+        label->setAlignment(Qt::AlignVCenter | Qt::AlignRight);
+        auto cbx = new QComboBox(parent);
+        for (const auto& level : levels)
+            cbx->addItem(std::get<1>(level));
+
+        layout->addWidget(label, row, column * 2);
+        layout->addWidget(cbx, row, column * 2 + 1);
+        if (++column >= num_columns)
         {
-            auto tm_slider = new TickmarkSlider(Qt::Horizontal, widget);
-            tm_slider->setTickTextFunc(tick_text_func);
-
-            slider = tm_slider;
-            first_after_split = false;
+            ++row;
+            column = 0;
         }
-        else
-        {
-            slider = new QSlider(Qt::Horizontal, widget);
-        }
-
-        slider->setFocusPolicy(Qt::StrongFocus);
-        slider->installEventFilter(filter);
-        slider->setRange(0, levels.size() - 1);
-        slider->setSingleStep(1);
-        slider->setPageStep(1);
-        slider->setTickInterval(1);
-        slider->setTickPosition(QSlider::TicksAbove);
-
-        layout->addWidget(label, (int)i, 0, Qt::AlignBottom);
-        layout->addWidget(slider, (int)i, 1, 1, 1);
     }
-    layout->setColumnStretch(0, 0);
-    layout->setRowStretch(0, 0);
-    return widget;
+
+    // Stretch combo boxes & not labels
+    for (int i = 0; i < num_columns; ++i)
+    {
+        layout->setColumnStretch(i * 2, 0);
+        layout->setColumnStretch(i * 2 + 1, 1);
+    }
+
+    return layout;
 }
 
 
