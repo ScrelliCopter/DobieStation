@@ -25,9 +25,6 @@ struct JitBlockRecord {
  */
 class JitBlock {
 private:
-    // all these must have at least 16 byte alignment
-    constexpr static int JIT_MAX_BLOCK_CODESIZE = 1024 * 4096; // 4 MB/block maximum code size
-    constexpr static int JIT_MAX_BLOCK_LITERALSIZE = 1024 * 8; // 1 MB/block maximum literal size
     uint8_t *building_block = nullptr;
     void *literals_start = nullptr;
     void *code_start = nullptr;
@@ -35,6 +32,10 @@ private:
     std::string jit_name;
 
 public:
+    // all these must have at least 16 byte alignment
+    constexpr static int JIT_MAX_BLOCK_CODESIZE = 1024 * 4096; // 4 MB/block maximum code size
+    constexpr static int JIT_MAX_BLOCK_LITERALSIZE = 1024 * 1024; // 1 MB/block maximum literal size
+
     explicit JitBlock(const std::string &name);
     ~JitBlock();
     void clear();
@@ -217,6 +218,14 @@ public:
         block_map.clear();
     }
 
+    bool heap_is_full()
+    {
+        if (heap_top - heap_cur < (JitBlock::JIT_MAX_BLOCK_CODESIZE + JitBlock::JIT_MAX_BLOCK_LITERALSIZE)) //Check we have 5mb spare (max block size)
+            return true;
+        else
+            return false;
+    }
+
     JitBlockRecord<DataType>* find_block(DataType data)
     {
         auto kv = block_map.find(data);
@@ -344,7 +353,6 @@ private:
     uint64_t heap_usage;
     uint64_t invalid_count = 0;
 
-
     // ee page
     EEPageRecord* lookup_ee_page(uint32_t page);
     EEPageRecord* ee_page_lookup_cache;
@@ -356,6 +364,8 @@ private:
 public:
     EEJitHeap();
     ~EEJitHeap();
+
+    EEJitBlockRecord* lookup_cache[1024 * 32];
 
     EEJitBlockRecord *insert_block(uint32_t PC, JitBlock* block);
     void flush_all_blocks();

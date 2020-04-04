@@ -47,6 +47,7 @@ class GraphicsInterface
         bool intermittent_mode;
         bool intermittent_active;
         bool path3_dma_waiting;
+        bool gif_temporary_stop;
 
         float internal_Q;
 
@@ -65,25 +66,29 @@ class GraphicsInterface
         bool fifo_draining();
         void dma_waiting(bool dma_waiting);
         int get_active_path();
-        bool path_active(int index);
+        int get_path_queue();
+        bool path_active(int index, bool canInterruptPath3);
         void resume_path3();
+        void clear_path_status(int index);
 
         uint32_t read_STAT();
         void write_MODE(uint32_t value);
+        void write_CTRL(uint32_t value);
 
         void request_PATH(int index, bool canInterruptPath3);
         void deactivate_PATH(int index);
-        void set_path3_vifmask(int value);
+        bool set_path3_vifmask(int value);
         bool path3_masked(int index);
         bool interrupt_path3(int index);
         bool path3_done();
+        void arbitrate_paths();
 
         bool send_PATH(int index, uint128_t quad);
 
         bool send_PATH1(uint128_t quad);
         void send_PATH2(uint32_t data[4]);
         void send_PATH3(uint128_t quad);
-        uint128_t read_GSFIFO();
+        std::tuple<uint128_t, uint32_t>read_GSFIFO();
 
         void intermittent_check();
 
@@ -96,13 +101,18 @@ inline int GraphicsInterface::get_active_path()
     return active_path;
 }
 
-inline bool GraphicsInterface::path_active(int index)
+inline int GraphicsInterface::get_path_queue()
 {
-    if (index != 3)
+    return path_queue;
+}
+
+inline bool GraphicsInterface::path_active(int index, bool canInterruptPath3)
+{
+    if (index != 3 && canInterruptPath3)
     {
         interrupt_path3(index);
     }
-    return (active_path == index) && !gs->stalled();
+    return (active_path == index) && !gs->stalled() && !gif_temporary_stop;
 }
 
 inline void GraphicsInterface::resume_path3()
@@ -115,6 +125,12 @@ inline void GraphicsInterface::resume_path3()
         path_status[3] = 0; //Force it to be busy so if VIF puts the mask back on quickly, it doesn't instantly mask it
         request_PATH(3, false);
     }
+}
+
+inline void GraphicsInterface::clear_path_status(int index)
+{
+    if(path_status[index] == 5)
+        path_status[index] = 4;
 }
 
 #endif // GIF_HPP

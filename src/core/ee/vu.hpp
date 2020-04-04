@@ -7,8 +7,6 @@
 #include "emotion.hpp"
 #include "../int128.hpp"
 
-#define XGKICK_INIT_DELAY 0
-
 union alignas(16) VU_R
 {
     float f;
@@ -84,7 +82,7 @@ class VectorUnit;
 class INTC;
 class EmotionEngine;
 
-extern "C" uint8_t* exec_block(VU_JIT64& jit, VectorUnit& vu);
+extern "C" uint8_t* exec_block_vu(VU_JIT64& jit, VectorUnit& vu);
 extern "C" uint8_t* exec_block_ee(EE_JIT64& jit, EmotionEngine& ee);
 
 class VectorUnit
@@ -96,6 +94,7 @@ class VectorUnit
         Emulator* e;
         INTC* intc;
         EmotionEngine* eecpu;
+        VectorUnit* other_vu; //Pointer to VU1 for VU0, vice versa for VU1
 
         uint64_t cycle_count; //Increments when "running" is true
         uint64_t run_event; //If less than cycle_count, the VU is allowed to run
@@ -115,11 +114,11 @@ class VectorUnit
         bool second_branch_pending;
         int branch_delay_slot, ebit_delay_slot;
 
-        int XGKICK_delay;
         uint16_t GIF_addr;
         bool transferring_GIF;
         bool XGKICK_stall;
         uint16_t stalled_GIF_addr;
+        int XGKICK_cycles;
 
         //GPR
         VU_GPR backup_newgpr;
@@ -160,7 +159,6 @@ class VectorUnit
         bool DIV_event_started;
         uint64_t finish_EFU_event;
         bool EFU_event_started;
-        int mbit_wait;
 
         float update_mac_flags(float value, int index);
         void clear_mac_flags(int index);
@@ -178,7 +176,7 @@ class VectorUnit
         void advance_r();
         void print_vectors(uint8_t a, uint8_t b);
     public:
-        VectorUnit(int id, Emulator* e, INTC* intc, EmotionEngine* eecpu);
+        VectorUnit(int id, Emulator* e, INTC* intc, EmotionEngine* eecpu, VectorUnit* other_vu);
 
         DecodedRegs decoder;
 
@@ -200,6 +198,7 @@ class VectorUnit
         void run(int cycles);
         void correct_jit_pipeline(int cycles);
         void run_jit(int cycles);
+        void update_XGKick();
         void handle_XGKICK();
         void start_program(uint32_t addr);
         void end_execution();
@@ -214,10 +213,15 @@ class VectorUnit
 
         static float convert(uint32_t value);
 
+        uint32_t read_reg(uint32_t addr);
         template <typename T> T read_instr(uint32_t addr);
         template <typename T> T read_data(uint32_t addr);
+        template <typename T> T read_mem(uint32_t addr);
+
+        void write_reg(uint32_t addr, uint32_t data);
         template <typename T> void write_instr(uint32_t addr, T data);
         template <typename T> void write_data(uint32_t addr, T data);
+        template <typename T> void write_mem(uint32_t addr, T data);
 
         bool is_running();
         bool stopped_by_tbit();
@@ -259,6 +263,10 @@ class VectorUnit
         void bal(uint32_t instr);
         void clip(uint32_t instr);
         void div(uint32_t instr);
+        float calculate_atan(float t);
+        void eatan(uint32_t instr);
+        void eatanxy(uint32_t instr);
+        void eatanxz(uint32_t instr);
         void eexp(uint32_t instr);
         void esin(uint32_t instr);
         void ercpr(uint32_t instr);
@@ -277,8 +285,10 @@ class VectorUnit
         void fmeq(uint32_t instr);
         void fmand(uint32_t instr);
         void fmor(uint32_t instr);
+        void fseq(uint32_t instr);
         void fsset(uint32_t instr);
         void fsand(uint32_t instr);
+        void fsor(uint32_t instr);
         void ftoi0(uint32_t instr);
         void ftoi4(uint32_t instr);
         void ftoi12(uint32_t instr);
@@ -360,6 +370,7 @@ class VectorUnit
         void suba(uint32_t instr);
         void subabc(uint32_t instr);
         void subai(uint32_t instr);
+        void subaq(uint32_t instr);
         void subbc(uint32_t instr);
         void subi(uint32_t instr);
         void subq(uint32_t instr);
@@ -380,7 +391,7 @@ class VectorUnit
 
         friend void vu_update_xgkick(VectorUnit& vu, int cycles);
         friend void vu_update_pipelines(VectorUnit& vu, int cycles);
-        friend uint8_t* exec_block(VU_JIT64& jit, VectorUnit& vu);
+        friend uint8_t* exec_block_vu(VU_JIT64& jit, VectorUnit& vu);
         friend uint8_t* exec_block_ee(EE_JIT64& jit, EmotionEngine& ee);
 };
 
@@ -392,6 +403,16 @@ inline T VectorUnit::read_instr(uint32_t addr)
 
 template <typename T>
 inline T VectorUnit::read_data(uint32_t addr)
+{
+    if (id == 1)
+        return *(T*)&data_mem.m[addr & 0x3FFF];
+    if (addr & 0x4000)
+        return other_vu->read_reg(addr);
+    return *(T*)&data_mem.m[addr & 0xFFF];
+}
+
+template <typename T>
+inline T VectorUnit::read_mem(uint32_t addr)
 {
     return *(T*)&data_mem.m[addr & mem_mask];
 }
@@ -405,6 +426,17 @@ inline void VectorUnit::write_instr(uint32_t addr, T data)
 
 template <typename T>
 inline void VectorUnit::write_data(uint32_t addr, T data)
+{
+    if (id == 1)
+        *(T*)&data_mem.m[addr & 0x3FFF] = data;
+    else if (addr & 0x4000)
+        other_vu->write_reg(addr, data);
+    else
+        *(T*)&data_mem.m[addr & 0xFFF] = data;
+}
+
+template <typename T>
+inline void VectorUnit::write_mem(uint32_t addr, T data)
 {
     *(T*)&data_mem.m[addr & mem_mask] = data;
 }

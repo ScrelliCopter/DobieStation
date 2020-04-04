@@ -28,7 +28,9 @@ enum class REG_STATE
     READ_WRITE
 };
 
-extern "C" uint8_t* exec_block(VU_JIT64& jit, VectorUnit& vu);
+extern "C" uint8_t* exec_block_vu(VU_JIT64& jit, VectorUnit& vu);
+
+typedef void (*VUJitPrologue)(VU_JIT64& jit, VectorUnit& vu);
 
 class VU_JIT64
 {
@@ -39,6 +41,7 @@ class VU_JIT64
         VUJitHeap jit_heap;
         Emitter64 emitter;
         VU_JitTranslator ir;
+        VUJitPrologue prologue_block;
 
         //Set to 0x7FFFFFFF, repeated four times
         VU_GPR abs_constant;
@@ -46,6 +49,9 @@ class VU_JIT64
         VU_GPR max_flt_constant, min_flt_constant;
 
         VU_GPR ftoi_table[4], itof_table[4];
+
+        uint32_t saved_mxcsr;
+        uint32_t vu_mxcsr;
 
         int abi_int_count;
         int abi_xmm_count;
@@ -175,15 +181,17 @@ class VU_JIT64
         REG_64 alloc_int_reg(VectorUnit& vu, int vi_reg, REG_STATE state = REG_STATE::READ_WRITE);
         REG_64 alloc_sse_reg(VectorUnit& vu, int vf_reg, REG_STATE state = REG_STATE::READ_WRITE);
         REG_64 alloc_sse_scratchpad(VectorUnit& vu, int vf_reg);
+        REG_64 alloc_sse_temp_reg(VectorUnit& vu);
         void set_clamping(int xmmreg, bool value, uint8_t field);
         bool needs_clamping(int xmmreg, uint8_t field);
         void flush_regs(VectorUnit& vu);
         void flush_sse_reg(VectorUnit& vu, int vf_reg);
+        void flush_sse_temp_reg(VectorUnit& vu, REG_64 xmm);
 
+        void create_prologue_block();
         void emit_prologue();
         void emit_instruction(VectorUnit& vu, IR::Instruction& instr);
         VUJitBlockRecord* recompile_block(VectorUnit& vu, IR::Block& block);
-        //uint8_t* exec_block(VectorUnit& vu);
         void cleanup_recompiler(VectorUnit& vu, bool clear_regs);
         void emit_epilogue();
 
@@ -197,7 +205,7 @@ class VU_JIT64
         void set_current_program(uint32_t crc);
         uint16_t run(VectorUnit& vu);
 
-        friend uint8_t* exec_block(VU_JIT64& jit, VectorUnit& vu);
+        friend uint8_t* exec_block_vu(VU_JIT64& jit, VectorUnit& vu);
 };
 
 #endif // VU_JIT64_HPP

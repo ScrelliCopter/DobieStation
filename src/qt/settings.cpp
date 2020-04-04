@@ -116,12 +116,16 @@ void Settings::add_rom_path(const QString& path)
     if (path.isEmpty())
         return;
 
-    if (!recent_roms.contains(path, Qt::CaseInsensitive))
-    {
-        recent_roms.prepend(path);
-        qsettings().setValue("recent_roms", recent_roms);
-        emit rom_path_added(path);
-    }
+    if (recent_roms.contains(path))
+        recent_roms.removeAt(recent_roms.indexOf(path));
+
+    recent_roms.prepend(path);
+
+    if (recent_roms.size() > 10)
+        recent_roms = recent_roms.mid(0, 10);
+
+    qsettings().setValue("recent_roms", recent_roms);
+    emit rom_path_added(path);
 }
 
 void Settings::clear_rom_paths()

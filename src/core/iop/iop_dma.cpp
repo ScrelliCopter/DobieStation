@@ -1,14 +1,15 @@
 #include <cstdio>
-#include "cdvd.hpp"
+#include "cdvd/cdvd.hpp"
 #include "iop_dma.hpp"
+#include "iop_intc.hpp"
 #include "sio2.hpp"
 #include "spu.hpp"
 
-#include "../emulator.hpp"
+#include "../errors.hpp"
 #include "../sif.hpp"
 
-IOP_DMA::IOP_DMA(Emulator* e, CDVD_Drive* cdvd, SubsystemInterface* sif, SIO2* sio2, class SPU* spu, class SPU* spu2) :
-    e(e), cdvd(cdvd), sif(sif), sio2(sio2), spu(spu), spu2(spu2)
+IOP_DMA::IOP_DMA(IOP_INTC* intc, CDVD_Drive* cdvd, SubsystemInterface* sif, SIO2* sio2, class SPU* spu, class SPU* spu2) :
+    intc(intc), cdvd(cdvd), sif(sif), sio2(sio2), spu(spu), spu2(spu2)
 {
     apply_dma_functions();
 }
@@ -166,6 +167,7 @@ void IOP_DMA::process_SPU2()
 
 void IOP_DMA::process_SIF0()
 {
+    static int junk_words = 0;
     if (channels[IOP_SIF0].word_count)
     {
         uint32_t data = *(uint32_t*)&RAM[channels[IOP_SIF0].addr];
@@ -173,8 +175,12 @@ void IOP_DMA::process_SIF0()
 
         channels[IOP_SIF0].addr += 4;
         channels[IOP_SIF0].word_count--;
-        if (!channels[IOP_SIF0].word_count && channels[IOP_SIF0].tag_end)
-            transfer_end(IOP_SIF0);
+        if (!channels[IOP_SIF0].word_count)
+        {
+            sif->send_SIF0_junk(junk_words);
+            if (channels[IOP_SIF0].tag_end)
+                transfer_end(IOP_SIF0);
+        }
     }
     //Read tag if there's enough room to transfer the EE's tag
     else if (sif->get_SIF0_size() <= SubsystemInterface::MAX_FIFO_SIZE - 2)
@@ -186,13 +192,26 @@ void IOP_DMA::process_SIF0()
         sif->write_SIF0(*(uint32_t*)&RAM[channels[IOP_SIF0].tag_addr + 12]);
 
         channels[IOP_SIF0].addr = data & 0xFFFFFF;
-        channels[IOP_SIF0].word_count = (words + 3) & 0xFFFFC; //round to nearest 4?
+        channels[IOP_SIF0].word_count = words & 0xFFFFF;
+
+        /* NOTE: UNCONFIRMED ON REAL HARDWARE!
+         * The default behavior of PCSX2 is to round up "words" to the nearest 16 bytes.
+         * This has the effect of reading additional data from the SIF0 buffer in IOP memory.
+         * However, True Crime: Streets of L.A. stores important variables right next to a 4 byte receive buffer.
+         * Thus, the variables get overwritten when certain transfers occur, and the game expects them to be nonzero.
+         * PCSX2's behavior causes that memory to be zeroed out, which crashes the game in menus.
+         *
+         * I have surmised that the correct behavior on nonaligned transfers is to read the oldest values
+         * from previous transfers. This indeed results in the game's memory being nonzero, allowing it to go in-game.
+         */
+        junk_words = (words & 0x3) ? (4 - (words & 0x3)) : 0;
 
         channels[IOP_SIF0].tag_addr += 16;
 
         printf("[IOP DMA] Read SIF0 DMAtag!\n");
         printf("Data: $%08X\n", data);
         printf("Words: $%08X\n", channels[IOP_SIF0].word_count);
+        printf("Junk: %d\n", junk_words);
 
         if ((data & (1 << 31)) || (data & (1 << 30)))
             channels[IOP_SIF0].tag_end = true;
@@ -273,7 +292,7 @@ void IOP_DMA::transfer_end(int index)
     {
         printf("[IOP DMA] IRQ requested: $%08X $%08X\n", DICR.STAT[dicr2], DICR.MASK[dicr2]);
         DICR.STAT[dicr2] |= 1 << index;
-        e->iop_request_IRQ(3);
+        intc->assert_irq(3);
     }
 }
 
@@ -395,7 +414,7 @@ void IOP_DMA::set_DICR(uint32_t value)
     DICR.master_int_enable[0] = value & (1 << 23);
     DICR.STAT[0] &= ~((value >> 24) & 0x7F);
     if (DICR.force_IRQ[0])
-        e->iop_request_IRQ(3);
+        intc->assert_irq(3);
 }
 
 void IOP_DMA::set_DICR2(uint32_t value)
@@ -406,7 +425,7 @@ void IOP_DMA::set_DICR2(uint32_t value)
     DICR.master_int_enable[1] = value & (1 << 23);
     DICR.STAT[1] &= ~((value >> 24) & 0x7F);
     if (DICR.force_IRQ[1])
-        e->iop_request_IRQ(3);
+        intc->assert_irq(3);
 }
 
 void IOP_DMA::set_DMA_request(int index)

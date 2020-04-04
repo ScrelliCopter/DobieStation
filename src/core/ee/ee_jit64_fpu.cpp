@@ -282,16 +282,18 @@ void EE_JIT64::floating_point_square_root(EmotionEngine& ee, IR::Instruction& in
 {
     REG_64 source = alloc_reg(ee, instr.get_source(), REG_TYPE::FPU, REG_STATE::READ);
     REG_64 dest = alloc_reg(ee, instr.get_dest(), REG_TYPE::FPU, REG_STATE::WRITE);
+    REG_64 XMM0 = lalloc_xmm_reg(ee, -1, REG_TYPE::XMMSCRATCHPAD, REG_STATE::SCRATCHPAD, (REG_64)-1);
 
-    // abs(source)
-    if (source != dest)
-        emitter.MOVSS_REG(source, dest);
-    emitter.load_addr((uint64_t)&FPU_MASK_ABS[0], REG_64::RAX);
-    emitter.PAND_XMM_FROM_MEM(REG_64::RAX, dest);
-    
-    emitter.SQRTSS(source, dest);
+    // dest = abs(source)
+    emitter.MOVD_FROM_XMM(source, REG_64::RAX);
+    emitter.AND32_EAX(0x7FFFFFFF);
+    emitter.MOVD_TO_XMM(REG_64::RAX, dest);
+
+    emitter.SQRTSS(dest, dest);
 
     clamp_freg(dest);
+
+    free_xmm_reg(ee, XMM0);
 }
 
 void EE_JIT64::floating_point_subtract(EmotionEngine& ee, IR::Instruction& instr)
@@ -321,9 +323,7 @@ void EE_JIT64::floating_point_subtract(EmotionEngine& ee, IR::Instruction& instr
 
 void EE_JIT64::floating_point_reciprocal_square_root(EmotionEngine& ee, IR::Instruction& instr)
 {
-    REG_64 R15 = alloc_reg(ee, 0, REG_TYPE::INTSCRATCHPAD, REG_STATE::SCRATCHPAD);
-    REG_64 XMM0 = alloc_reg(ee, 0, REG_TYPE::XMMSCRATCHPAD, REG_STATE::SCRATCHPAD);
-    REG_64 XMM1 = alloc_reg(ee, 0, REG_TYPE::XMMSCRATCHPAD, REG_STATE::SCRATCHPAD);
+    REG_64 XMM0 = lalloc_xmm_reg(ee, 0, REG_TYPE::XMMSCRATCHPAD, REG_STATE::SCRATCHPAD);
     REG_64 source = alloc_reg(ee, instr.get_source(), REG_TYPE::FPU, REG_STATE::READ);
     REG_64 source2 = alloc_reg(ee, instr.get_source2(), REG_TYPE::FPU, REG_STATE::READ);
     REG_64 dest = alloc_reg(ee, instr.get_dest(), REG_TYPE::FPU, REG_STATE::WRITE);
@@ -334,31 +334,30 @@ void EE_JIT64::floating_point_reciprocal_square_root(EmotionEngine& ee, IR::Inst
     uint8_t *normalop = emitter.JCC_NEAR_DEFERRED(ConditionCode::NZ);
 
     // Second operand's exponent is 0
-    // dest = (source ^ source2) & 0x80000000
+    // dest = (source & 0x80000000) | 0x7F7FFFFF
     emitter.MOVD_FROM_XMM(source, REG_64::RAX);
-    emitter.MOVD_FROM_XMM(source2, R15);
-    emitter.XOR32_REG(R15, REG_64::RAX);
     emitter.AND32_EAX(0x80000000);
+    emitter.OR32_REG_IMM(0x7F7FFFFF, REG_64::RAX);
     emitter.MOVD_TO_XMM(REG_64::RAX, dest);
     uint8_t *exit = emitter.JMP_NEAR_DEFERRED();
 
     // Second operand's exponent is nonzero
-    // dest = clamp(source) / sqrt(fabs(clamp(source2)))
     emitter.set_jump_dest(normalop);
-    emitter.MOVAPS_REG(source, XMM0);
-    emitter.MOVAPS_REG(source2, XMM1);
+    
+    // dest = clamp(clamp(source) / sqrt(clamp(fabsf(source2))))
+    emitter.MOVD_FROM_XMM(source2, REG_64::RAX);
+    if (source != dest)
+        emitter.MOVSS_REG(source, dest);
+    emitter.AND32_EAX(0x7FFFFFFF);
+    emitter.MOVD_TO_XMM(REG_64::RAX, XMM0);
+    clamp_freg(dest);
     clamp_freg(XMM0);
-    clamp_freg(XMM1);
-    emitter.load_addr((uint64_t)&FPU_MASK_ABS[0], REG_64::RAX);
-    emitter.PAND_XMM_FROM_MEM(REG_64::RAX, XMM1);
-    emitter.SQRTSS(XMM1, XMM1);
-    emitter.MOVAPS_REG(XMM0, dest);
-    emitter.DIVSS(XMM1, dest);
+    emitter.SQRTSS(XMM0, XMM0);
+    emitter.DIVSS(XMM0, dest);
+    clamp_freg(dest);
 
     emitter.set_jump_dest(exit);
-    free_int_reg(ee, R15);
     free_xmm_reg(ee, XMM0);
-    free_xmm_reg(ee, XMM1);
 }
 
 void EE_JIT64::move_control_word_from_floating_point(EmotionEngine& ee, IR::Instruction& instr)
@@ -368,7 +367,7 @@ void EE_JIT64::move_control_word_from_floating_point(EmotionEngine& ee, IR::Inst
     switch (instr.get_source())
     {
         case 0x0:
-            emitter.MOV32_IMM_MEM(0x2E00, dest);
+            emitter.MOV64_OI(0x2E00, dest);
             break;
         case 0x1F:
         {

@@ -63,6 +63,8 @@ alignas(16) static uint32_t PPACH_MASK[4] = { 0x0000FFFF, 0x0000FFFF, 0x0000FFFF
 
 extern "C" uint8_t* exec_block_ee(EE_JIT64& jit, EmotionEngine& ee);
 
+typedef void (*EEJitPrologue)(EE_JIT64& jit, EmotionEngine& ee, EEJitBlockRecord** cache);
+
 class EE_JIT64
 {
 private:
@@ -83,8 +85,15 @@ private:
     uint32_t ee_branch_dest, ee_branch_fail_dest;
     uint32_t ee_branch_delay_dest, ee_branch_delay_fail_dest;
     uint16_t cycle_count;
+    uint32_t saved_mxcsr;
+    uint32_t ee_mxcsr;
+    // Cycles added to the cycle count in the middle of the block, e.g. UpdateVU0
+    uint64_t cycles_added;
 
     bool should_update_mac;
+
+    //Pointer to the dispatcher prologue that begins execution of recompiled code
+    EEJitPrologue prologue_block;
 
     void handle_branch_likely(EmotionEngine& ee, IR::Block& block);
 
@@ -264,6 +273,8 @@ private:
     bool needs_clamping(int reg, uint8_t field);
     void set_clamping(int reg, bool value, uint8_t field);
     void update_mac_flags(EmotionEngine& ee, REG_64 reg, uint8_t field);
+    void check_interlock_vu0(EmotionEngine& ee, IR::Instruction& instr);
+    void update_vu0(EmotionEngine& ee, IR::Instruction& instr);
     void wait_for_vu0(EmotionEngine& ee, IR::Instruction& instr);
 
     // ABI prep/function call
@@ -286,6 +297,7 @@ private:
 
     // Address lookup
     uint64_t get_gpr_addr(const EmotionEngine &ee, int index) const;
+    uint64_t get_gpr_offset(int index) const;
     uint64_t get_vi_addr(const EmotionEngine &ee, int index) const;
     uint64_t get_fpu_addr(const EmotionEngine &ee, int index) const;
     uint64_t get_vf_addr(const EmotionEngine &ee, int index) const;
@@ -298,10 +310,12 @@ private:
     void free_xmm_reg(EmotionEngine& ee, REG_64 reg);
 
     // Recompile + Cleanup
+    EEJitPrologue create_prologue_block();
     void emit_prologue();
+    void emit_dispatcher();
     void emit_instruction(EmotionEngine &ee, IR::Instruction &instr);
     EEJitBlockRecord* recompile_block(EmotionEngine& ee, IR::Block& block);
-    void cleanup_recompiler(EmotionEngine& ee, bool clear_regs);
+    void cleanup_recompiler(EmotionEngine& ee, bool clear_regs, bool dispatcher, uint64_t cycles);
     void emit_epilogue();
 public:
     EE_JIT64();
@@ -327,5 +341,7 @@ void ee_syscall_exception(EmotionEngine& ee);
 void vu0_start_program(VectorUnit& vu0, uint32_t addr);
 uint32_t vu0_read_CMSAR0_shl3(VectorUnit& vu0);
 bool ee_vu0_wait(EmotionEngine& ee);
+bool ee_check_interlock(EmotionEngine& ee);
+void ee_clear_interlock(EmotionEngine& ee);
 
 #endif // EE_JIT64_HPP

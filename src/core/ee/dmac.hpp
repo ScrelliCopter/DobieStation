@@ -18,6 +18,7 @@ enum DMAC_CHANNELS
     EE_SIF2,
     SPR_FROM,
     SPR_TO,
+    DMA_STALL = 13,
     MFIFO_EMPTY = 14
 };
 
@@ -42,6 +43,7 @@ struct DMA_Channel
 
     bool started;
     bool can_stall_drain;
+    bool has_dma_stalled;
     bool dma_req;
     bool is_spr;
 
@@ -146,6 +148,7 @@ class DMAC
         void write_master_disable(uint32_t value);
 
         uint8_t read8(uint32_t address);
+        uint16_t read16(uint32_t address);
         uint32_t read32(uint32_t address);
         void write8(uint32_t address, uint8_t value);
         void write16(uint32_t address, uint16_t value);
