@@ -107,6 +107,6 @@ namespace logger
     __LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::DEBUG) \
     __LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::INFO) \
     __LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::WARN) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(fatal, CAT, logger::FATAL) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(fatal, CAT, logger::FATAL)
 
 #endif//__LOGGER_HPP__
