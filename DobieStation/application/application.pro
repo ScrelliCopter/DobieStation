@@ -3,13 +3,14 @@ greaterThan(QT_MAJOR_VERSION, 4) : QT += widgets
 
 TEMPLATE = app
 TARGET = ../DobieStation
-CONFIG += console c++11
+CONFIG += console c++14
 CONFIG -= app_bundle
 
-INCLUDEPATH += ../../ext/libdeflate
+INCLUDEPATH += ../../src ../../ext/libdeflate ../../ext/fmt/include
 LIBS += -L../libdeflate
 win32:LIBS += -llibdeflate
 else:LIBS += -ldeflate
+LIBS += -L../fmt -lfmt
 
 QMAKE_CFLAGS_RELEASE -= -O
 QMAKE_CFLAGS_RELEASE -= -O1
@@ -92,6 +93,8 @@ SOURCES += ../../src/qt/main.cpp \
     ../../src/qt/settingswindow.cpp \
     ../../src/qt/bios.cpp \
     ../../src/qt/gamelistwidget.cpp \
+    ../../src/qt/loggingwindow.cpp \
+    ../../src/core/logger.cpp \
     ../../src/core/ee/ee_jittrans.cpp \
     ../../src/core/ee/ee_jit.cpp \
     ../../src/core/ee/ee_jit64.cpp \
@@ -167,6 +170,8 @@ HEADERS += \
     ../../src/qt/settingswindow.hpp \
     ../../src/qt/bios.hpp \
     ../../src/qt/gamelistwidget.hpp \
+    ../../src/qt/loggingwindow.hpp \
+    ../../src/core/logger.hpp \
     ../../src/core/ee/ee_jittrans.hpp \
     ../../src/core/ee/ee_jit.hpp \
     ../../src/core/ee/ee_jit64.hpp

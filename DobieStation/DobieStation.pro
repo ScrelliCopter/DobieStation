@@ -1,4 +1,4 @@
 TEMPLATE = subdirs
-SUBDIRS = application libdeflate
+SUBDIRS = application libdeflate fmt
 
-application.depends = libdeflate
+application.depends = libdeflate fmt
