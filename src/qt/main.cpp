@@ -1,10 +1,14 @@
 #include <QApplication>
 #include <memory>
 #include "emuwindow.hpp"
+#include "core/logger.hpp"
 
 
 int main(int argc, char** argv)
 {
+    logger::add_handler(std::make_unique<logger::ConsoleHandler>());
+    logger::add_handler(std::make_unique<logger::FileHandler>("filehandler_test.log"));
+
     QApplication::setOrganizationName("PSI");
     QApplication::setApplicationName("DobieStation");
     QApplication::setOrganizationDomain("https://github.com/PSI-Rockin/DobieStation");

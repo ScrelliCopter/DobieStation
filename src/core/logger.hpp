@@ -2,6 +2,7 @@
 #define __LOGGER_HPP__
 
 #include <fmt/core.h>
+#include <memory>
 
 namespace logger
 {
@@ -49,6 +50,43 @@ namespace logger
 
         NUM_LEVELS
     };
+
+    class LogHandler
+    {
+    public:
+        virtual ~LogHandler() = default;
+        virtual void write(Category cat, Level lvl, const char* str, char eol) = 0;
+    };
+
+    class StreamHandler : public LogHandler
+    {
+        Category last_cat = Category::NUM_CATEGORIES;
+        Level    last_lvl = NUM_LEVELS;
+        char     last_eol = '\n';
+
+    protected:
+        const bool colour;
+        FILE* stream;
+
+    public:
+        inline explicit StreamHandler(FILE* file, bool enable_colour = false) : stream(file), colour(enable_colour) {}
+        void write(Category cat, Level lvl, const char* str, char eol) override;
+    };
+
+    class ConsoleHandler : public StreamHandler
+    {
+    public:
+        inline ConsoleHandler() : StreamHandler(stderr, true) {};
+    };
+
+    class FileHandler : public StreamHandler
+    {
+    public:
+        explicit FileHandler(const char* path);
+        ~FileHandler() override;
+    };
+
+    void add_handler(std::unique_ptr<LogHandler>&& new_handler);
 
     void __write_internal(Category cat, Level lvl, const char* str, char eol);
 

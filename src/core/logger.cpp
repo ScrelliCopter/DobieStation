@@ -1,5 +1,6 @@
 #include "logger.hpp"
 #include <cstdio>
+#include <vector>
 #include <chrono>
 #include <fmt/chrono.h>
 
@@ -84,44 +85,108 @@ constexpr const char* category_token(Category cat)
     }
 }
 
+constexpr const char* level_token(Level lvl)
+{
+    switch (lvl)
+    {
+    case (TRACE): return "Trace: ";
+    case (DEBUG): return "Debug: ";
+    case (INFO):  return "Info: ";
+    case (WARN):  return "Warn: ";
+    case (FATAL): return "FATAL: ";
+
+    default: return "";
+    }
+}
+
 
 void write_date(FILE* f)
 {
     auto now = chrono::high_resolution_clock::now();
     auto ltime = chrono::system_clock::to_time_t(now);
     auto frac_sec = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
-    fmt::print(stderr, "[{:%H:%M:%S}.{:03d}] ", *std::localtime(&ltime), frac_sec);
+    fmt::print(f, "[{:%H:%M:%S}.{:03d}] ", *std::localtime(&ltime), frac_sec);
+}
+
+void StreamHandler::write(Category cat, Level lvl, const char* str, char eol)
+{
+    if (!stream)
+        return;
+
+    if (last_eol == '\n')
+    {
+        if (colour)
+            fputs(ESC(DIM), stream);
+        write_date(stream);
+        if (colour)
+            fputs(ESC(FG_GREEN), stream);
+        else
+            fputs(level_token(lvl), stream);
+        fputs(category_token(cat), stream);
+    }
+    else if (cat != last_cat)
+    {
+        putc('\n', stream);
+        if (colour)
+            fputs(ESC(DIM), stream);
+        write_date(stream);
+        if (colour)
+            fputs(ESC(FG_GREEN), stream);
+        else
+            fputs(level_token(lvl), stream);
+        fputs(category_token(cat), stream);
+    }
+    else if (!colour && lvl != last_lvl)
+    {
+        putc('\n', stream);
+        write_date(stream);
+        fputs(level_token(lvl), stream);
+        fputs(category_token(cat), stream);
+    }
+
+    last_cat = cat;
+    last_lvl = lvl;
+    last_eol = eol;
+
+    if (colour)
+    {
+        fputs(ESC(RESET), stream);
+        fputs(level_esc(lvl), stream);
+    }
+
+    if (str)
+        fputs(str, stream);
+    if (colour)
+        fputs(ESC(RESET), stream);
+    if (eol)
+        putc(eol, stream);
+}
+
+FileHandler::FileHandler(const char* path)
+    : StreamHandler(fopen(path, "wb"))
+{
+    //TODO: report stream errors somehow
+    if (stream)
+        fprintf(stream, "start of text log\ndate would go here\nlogging settings and other relevant stuff (like maybe specs?) would go here\n\n");
+}
+
+FileHandler::~FileHandler()
+{
+    if (!stream)
+        fclose(stream);
+}
+
+
+static std::vector<std::unique_ptr<LogHandler>> handlers;
+
+void logger::add_handler(std::unique_ptr<LogHandler>&& new_handler)
+{
+    if (new_handler)
+        handlers.emplace_back(std::move(new_handler));
 }
 
 void logger::__write_internal(Category cat, Level lvl, const char* str, char eol)
 {
-    static Category last_cat = Category::NUM_CATEGORIES;
-    static char     last_eol = '\n';
-
-    if (last_eol == '\n')
-    {
-        fputs(ESC(DIM), stderr);
-        write_date(stderr);
-        fputs(ESC(FG_GREEN), stderr);
-        fputs(category_token(cat), stderr);
-    }
-    else if (cat != last_cat)
-    {
-        putc('\n', stderr);
-        fputs(ESC(DIM), stderr);
-        write_date(stderr);
-        fputs(ESC(FG_GREEN), stderr);
-        fputs(category_token(cat), stderr);
-    }
-
-    last_cat = cat;
-    last_eol = eol;
-
-    fputs(ESC(RESET), stderr);
-    fputs(level_esc(lvl), stderr);
-    if (str)
-        fputs(str, stderr);
-    fputs(ESC(RESET), stderr);
-    if (eol)
-        putc(eol, stderr);
+    for (auto& handler : handlers)
+        handler->write(cat, lvl, str, eol);
 }
