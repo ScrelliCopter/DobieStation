@@ -54,32 +54,32 @@ constexpr const char* category_token(Category cat)
 {
     switch (cat)
     {
-    case (CAT_EE):         return "EE: ";
-    case (CAT_EE_TIMING):  return "EE Timing: ";
-    case (CAT_IOP):        return "IOP: ";
-    case (CAT_IOP_DMA):    return "IOP DMA: ";
-    case (CAT_IOP_TIMING): return "IOP Timing: ";
-    case (CAT_COP0):       return "COP0: ";
-    case (CAT_COP2):       return "COP2: ";
-    case (CAT_FPU):        return "FPU: ";
-    case (CAT_IPU):        return "IPU: ";
-    case (CAT_CDVD):       return "CDVD: ";
-    case (CAT_PAD):        return "PAD: ";
-    case (CAT_SPU):        return "SPU: ";
-    case (CAT_GIF):        return "GIF: ";
-    case (CAT_GS):         return "GS: ";
-    case (CAT_GS_R):       return "GS Registers: ";
-    case (CAT_GS_T):       return "GS Thread: ";
-    case (CAT_GS_JIT):     return "GS JIT: ";
-    case (CAT_DMAC):       return "DMAC: ";
-    case (CAT_SIO2):       return "SIO2: ";
-    case (CAT_SIF):        return "SIF: ";
-    case (CAT_VIF):        return "VIF: ";
-    case (CAT_VU):         return "VU: ";
-    case (CAT_VU0):        return "VU0: ";
-    case (CAT_VU1):        return "VU1: ";
-    case (CAT_VU_JIT):     return "VU_JIT: ";
-    case (CAT_VU_JIT64):   return "VU_JIT64: ";
+    case (Category::EE):         return "EE: ";
+    case (Category::EE_TIMING):  return "EE Timing: ";
+    case (Category::IOP):        return "IOP: ";
+    case (Category::IOP_DMA):    return "IOP DMA: ";
+    case (Category::IOP_TIMING): return "IOP Timing: ";
+    case (Category::COP0):       return "COP0: ";
+    case (Category::COP2):       return "COP2: ";
+    case (Category::FPU):        return "FPU: ";
+    case (Category::IPU):        return "IPU: ";
+    case (Category::CDVD):       return "CDVD: ";
+    case (Category::PAD):        return "PAD: ";
+    case (Category::SPU):        return "SPU: ";
+    case (Category::GIF):        return "GIF: ";
+    case (Category::GS):         return "GS: ";
+    case (Category::GS_R):       return "GS Registers: ";
+    case (Category::GS_T):       return "GS Thread: ";
+    case (Category::GS_JIT):     return "GS JIT: ";
+    case (Category::DMAC):       return "DMAC: ";
+    case (Category::SIO2):       return "SIO2: ";
+    case (Category::SIF):        return "SIF: ";
+    case (Category::VIF):        return "VIF: ";
+    case (Category::VU):         return "VU: ";
+    case (Category::VU0):        return "VU0: ";
+    case (Category::VU1):        return "VU1: ";
+    case (Category::VU_JIT):     return "VU_JIT: ";
+    case (Category::VU_JIT64):   return "VU_JIT64: ";
 
     default: return "";
     }
@@ -94,9 +94,9 @@ void write_date(FILE* f)
     fmt::print(stderr, "[{:%H:%M:%S}.{:03d}] ", *std::localtime(&ltime), frac_sec);
 }
 
-void logger::log_write(Category cat, Level lvl, const char* str, char eol)
+void logger::__write_internal(Category cat, Level lvl, const char* str, char eol)
 {
-    static Category last_cat = NUM_CATEGORIES;
+    static Category last_cat = Category::NUM_CATEGORIES;
     static char     last_eol = '\n';
 
     if (last_eol == '\n')

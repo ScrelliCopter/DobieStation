@@ -5,35 +5,35 @@
 
 namespace logger
 {
-    enum Category
+    enum class Category
     {
-        CAT_MISC,
-        CAT_EE,
-        CAT_EE_TIMING,
-        CAT_IOP,
-        CAT_IOP_DMA,
-        CAT_IOP_TIMING,
-        CAT_COP0,
-        CAT_COP2,
-        CAT_FPU,
-        CAT_IPU,
-        CAT_CDVD,
-        CAT_PAD,
-        CAT_SPU,
-        CAT_GIF,
-        CAT_GS,
-        CAT_GS_R,
-        CAT_GS_T,
-        CAT_GS_JIT,
-        CAT_DMAC,
-        CAT_SIO2,
-        CAT_SIF,
-        CAT_VIF,
-        CAT_VU,
-        CAT_VU0,
-        CAT_VU1,
-        CAT_VU_JIT,
-        CAT_VU_JIT64,
+        MISC,
+        EE,
+        EE_TIMING,
+        IOP,
+        IOP_DMA,
+        IOP_TIMING,
+        COP0,
+        COP2,
+        FPU,
+        IPU,
+        CDVD,
+        PAD,
+        SPU,
+        GIF,
+        GS,
+        GS_R,
+        GS_T,
+        GS_JIT,
+        DMAC,
+        SIO2,
+        SIF,
+        VIF,
+        VU,
+        VU0,
+        VU1,
+        VU_JIT,
+        VU_JIT64,
 
         NUM_CATEGORIES
     };
@@ -51,14 +51,14 @@ namespace logger
         NUM_LEVELS
     };
 
-    void log_write(Category cat, Level lvl, const char* str, char eol = '\0');
+    void __write_internal(Category cat, Level lvl, const char* str, char eol);
 
     template <typename... Args>
-    inline void log_write(Category cat, Level lvl, char eof, const char* fmt, const Args&... args)
+    inline void __write_internal(Category cat, Level lvl, char eol, const char* fmt, const Args&... args)
     {
         try
         {
-            log_write(cat, lvl, fmt::format(fmt, args...).c_str(), eof);
+            __write_internal(cat, lvl, fmt::format(fmt, args...).c_str(), eol);
         }
         catch (std::exception& e)
         {
@@ -66,27 +66,49 @@ namespace logger
         }
     }
 
-#define LOGGER_GENERATE_WRAPPER_FUNC(NAME, LVL) \
-    inline void NAME(Category cat, const char* str) { \
-        log_write(cat, LVL, str); } \
-    inline void NAME##_l(Category cat, const char* str) { \
-        log_write(cat, LVL, str, '\n'); } \
-    template <typename... Args> \
-    inline void NAME(Category cat, const char* fmt, const Args&... args) { \
-        log_write(cat, LVL, '\0', fmt, args...); } \
-    template <typename... Args> \
-    inline void NAME##_l(Category cat, const char* fmt, const Args&... args) { \
-        log_write(cat, LVL, '\n', fmt, args...); } \
-    inline void NAME##_l(Category cat) { \
-        log_write(cat, LVL, '\n', nullptr); }
+    inline void log_write(Category cat, Level lvl, const char* str)
+    {
+        __write_internal(cat, lvl, str, '\0');
+    }
 
-    LOGGER_GENERATE_WRAPPER_FUNC(trace, TRACE)
-    LOGGER_GENERATE_WRAPPER_FUNC(debug, DEBUG)
-    LOGGER_GENERATE_WRAPPER_FUNC(info, INFO)
-    LOGGER_GENERATE_WRAPPER_FUNC(warn, WARN)
-    LOGGER_GENERATE_WRAPPER_FUNC(error, ERROR)
-    LOGGER_GENERATE_WRAPPER_FUNC(critical, CRITICAL)
+    inline void log_writeline(Category cat, Level lvl, const char* str)
+    {
+        __write_internal(cat, lvl, str, '\n');
+    }
 
+    template <typename... Args>
+    inline void log_write(Category cat, Level lvl, const char* fmt, const Args&... args)
+    {
+        __write_internal(cat, lvl, '\0', fmt, args...);
+    }
+
+    template <typename... Args>
+    inline void log_writeline(Category cat, Level lvl, const char* fmt, const Args&... args)
+    {
+        __write_internal(cat, lvl, '\n', fmt, args...);
+    }
 }
+
+#define _LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT, LVL) \
+    inline void NAME(const char* str) { \
+        logger::log_write(CAT, LVL, str); } \
+    inline void NAME##_l(const char* str) { \
+        logger::log_writeline(CAT, LVL, str); } \
+    template <typename... Args> \
+    inline void NAME(const char* fmt, const Args&... args) { \
+        logger::log_write(CAT, LVL, fmt, args...); } \
+    template <typename... Args> \
+    inline void NAME##_l(const char* fmt, const Args&... args) { \
+        logger::log_writeline(CAT, LVL, fmt, args...); } \
+    inline void NAME##_l() { \
+        logger::log_writeline(CAT, LVL, nullptr); }
+
+#define LOGGER_CREATE_CONVENIENCE_WRAPPERS(CAT) \
+    _LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::TRACE) \
+    _LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::DEBUG) \
+    _LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::INFO) \
+    _LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::WARN) \
+    _LOGGER_GENERATE_WRAPPER_FUNC(error, CAT, logger::ERROR) \
+    _LOGGER_GENERATE_WRAPPER_FUNC(critical, CAT, logger::CRITICAL) \
 
 #endif//__LOGGER_HPP__
