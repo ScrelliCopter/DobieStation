@@ -1,6 +1,6 @@
 #include "loggingwindow.hpp"
 
-#include <core/logger.hpp>
+#include "core/logger.hpp"
 #include <array>
 #include <tuple>
 
@@ -54,13 +54,12 @@ const std::array<std::tuple<logger::Category, QString>, (int)logger::Category::N
     std::make_tuple(logger::Category::VU_JIT64, "VU JIT64")};
 
 const std::array<std::tuple<logger::Level, QString>, logger::NUM_LEVELS> levels = {
-    std::make_tuple(logger::OFF,      "Off"),
-    std::make_tuple(logger::CRITICAL, "Critical"),
-    std::make_tuple(logger::ERROR,    "Error"),
-    std::make_tuple(logger::WARN,     "Warning"),
-    std::make_tuple(logger::INFO,     "Info"),
-    std::make_tuple(logger::DEBUG,    "Debug"),
-    std::make_tuple(logger::TRACE,    "Trace")};
+    std::make_tuple(logger::OFF,   "Off"),
+    std::make_tuple(logger::FATAL, "Fatal"),
+    std::make_tuple(logger::WARN,  "Warning"),
+    std::make_tuple(logger::INFO,  "Info"),
+    std::make_tuple(logger::DEBUG, "Debug"),
+    std::make_tuple(logger::TRACE, "Trace")};
 
 
 LoggingWindow::LoggingWindow(QWidget* parent) :
@@ -136,9 +135,9 @@ QLayout* LoggingWindow::create_view(QWidget* parent)
 void test_logger()
 {
     logger::log_writeline(logger::Category::MISC, logger::INFO, "test {0}:{1:04X} {0}", "test", 10);
-    logger::log_writeline(logger::Category::MISC, logger::ERROR, "poop {:i}", "oops"); // type error
+    logger::log_writeline(logger::Category::MISC, logger::INFO, "poop {:i}", "oops"); // type error
     const char text[24] = {'N', 'G', 'A', 'G', 'L', 'E', 'R', 'I', 'D', 'Y', 'M', 'O', 'T', 'H', 'F', 'U', 'C', 'K'};
-    logger::log_writeline(logger::Category::MISC, logger::CRITICAL, "{}{}{} {}{}{} {}{} {}{}",
+    logger::log_writeline(logger::Category::MISC, logger::FATAL, "{}{}{} {}{}{} {}{} {}{}",
         fmt::basic_string_view<char>(text + 5, 1), fmt::basic_string_view<char>(text + 0, 4),
         fmt::basic_string_view<char>(text + 5, 1),
         fmt::basic_string_view<char>(text + 6, 3), fmt::basic_string_view<char>(text + 4, 2),
@@ -174,6 +173,5 @@ void test_logger2()
     debug_l("debug");
     info_l("info");
     warn_l("warn");
-    error_l("error");
-    critical_l("critical");
+    fatal_l("fatal");
 }

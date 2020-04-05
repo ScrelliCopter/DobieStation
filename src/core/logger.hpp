@@ -44,8 +44,7 @@ namespace logger
         DEBUG,
         INFO,
         WARN,
-        ERROR,
-        CRITICAL,
+        FATAL,
         OFF,
 
         NUM_LEVELS
@@ -89,7 +88,7 @@ namespace logger
     }
 }
 
-#define _LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT, LVL) \
+#define __LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT, LVL) \
     inline void NAME(const char* str) { \
         logger::log_write(CAT, LVL, str); } \
     inline void NAME##_l(const char* str) { \
@@ -104,11 +103,10 @@ namespace logger
         logger::log_writeline(CAT, LVL, nullptr); }
 
 #define LOGGER_CREATE_CONVENIENCE_WRAPPERS(CAT) \
-    _LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::TRACE) \
-    _LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::DEBUG) \
-    _LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::INFO) \
-    _LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::WARN) \
-    _LOGGER_GENERATE_WRAPPER_FUNC(error, CAT, logger::ERROR) \
-    _LOGGER_GENERATE_WRAPPER_FUNC(critical, CAT, logger::CRITICAL) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::TRACE) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::DEBUG) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::INFO) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::WARN) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(fatal, CAT, logger::FATAL) \
 
 #endif//__LOGGER_HPP__

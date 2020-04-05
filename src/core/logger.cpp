@@ -39,12 +39,11 @@ constexpr const char* level_esc(Level lvl)
 {
     switch (lvl)
     {
-    case (TRACE):    return ESC(DIM);
-    case (DEBUG):    return ESC(FG_BLUE);
-    //case (INFO):     return ESC(RESET);
-    case (WARN):     return ESC(FG_YELLOW);
-    case (ERROR):    return ESC(FG_RED);
-    case (CRITICAL): return ESC2(BRIGHT, BG_RED);
+    case (TRACE): return ESC(DIM);
+    case (DEBUG): return ESC(FG_BLUE);
+    //case (INFO):  return ESC(RESET);
+    case (WARN):  return ESC(FG_YELLOW);
+    case (FATAL): return ESC2(BRIGHT, BG_RED);
 
     default: return "";
     }
@@ -78,8 +77,8 @@ constexpr const char* category_token(Category cat)
     case (Category::VU):         return "VU: ";
     case (Category::VU0):        return "VU0: ";
     case (Category::VU1):        return "VU1: ";
-    case (Category::VU_JIT):     return "VU_JIT: ";
-    case (Category::VU_JIT64):   return "VU_JIT64: ";
+    case (Category::VU_JIT):     return "VU JIT: ";
+    case (Category::VU_JIT64):   return "VU JIT64: ";
 
     default: return "";
     }
