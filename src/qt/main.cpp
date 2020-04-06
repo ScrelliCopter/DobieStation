@@ -6,8 +6,8 @@
 
 int main(int argc, char** argv)
 {
-    logger::add_handler(std::make_unique<logger::ConsoleHandler>());
-    logger::add_handler(std::make_unique<logger::FileHandler>("filehandler_test.log"));
+    logger::add_sink(std::make_unique<logger::ConsoleSink>());
+    logger::add_sink(std::make_unique<logger::FileSink>("filehandler_test.log"));
 
     QApplication::setOrganizationName("PSI");
     QApplication::setApplicationName("DobieStation");

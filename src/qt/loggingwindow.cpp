@@ -139,34 +139,32 @@ QLayout* LoggingWindow::create_view(QWidget* parent)
 
 void test_logger()
 {
-    logger::log_writeline(logger::Category::MISC, logger::Level::INFO, "test {0}:{1:04X} {0}", "test", 10);
-    logger::log_writeline(logger::Category::MISC, logger::Level::INFO, "poop {:i}", "oops"); // type error
+    logger::writeline(logger::Category::MISC, logger::Level::INFO, "test {0}:{1:04X} {0}", "test", 10);
+    logger::writeline(logger::Category::MISC, logger::Level::INFO, "poop {:i}", "oops"); // type error
     const char text[24] = {'N', 'G', 'A', 'G', 'L', 'E', 'R', 'I', 'D', 'Y', 'M', 'O', 'T', 'H', 'F', 'U', 'C', 'K'};
-    logger::log_writeline(logger::Category::MISC, logger::Level::FATAL, "{}{}{} {}{}{} {}{} {}{}",
+    logger::writeline(logger::Category::MISC, logger::Level::FATAL, "{}{}{} {}{}{} {}{} {}{}",
         fmt::basic_string_view<char>(text + 5, 1), fmt::basic_string_view<char>(text + 0, 4),
         fmt::basic_string_view<char>(text + 5, 1),
         fmt::basic_string_view<char>(text + 6, 3), fmt::basic_string_view<char>(text + 4, 2),
         fmt::basic_string_view<char>(text + 9, 1),
         fmt::basic_string_view<char>(text + 10, 4), fmt::basic_string_view<char>(text + 5, 2),
         fmt::basic_string_view<char>(text + 14, 4), fmt::basic_string_view<char>(text + 5, 2));
-    logger::log_write(logger::Category::MISC, logger::Level::INFO, "hi?");
-    logger::log_write(logger::Category::MISC, logger::Level::WARN, "hi!");
-    logger::log_writeline(logger::Category::EE, logger::Level::TRACE, "hi.");
 
     test_logger2();
 
-    const char* cat_enum_text[] = {"CAT_MISC", "CAT_EE", "CAT_EE_TIMING", "CAT_IOP", "CAT_IOP_DMA", "CAT_IOP_TIMING",
-        "CAT_COP0", "CAT_COP2", "CAT_FPU", "CAT_IPU", "CAT_CDVD", "CAT_PAD", "CAT_SPU", "CAT_GIF", "CAT_GS",
-        "CAT_GS_R", "CAT_GS_T", "CAT_GS_JIT", "CAT_DMAC", "CAT_SIO2", "CAT_VIF", "CAT_SIF", "CAT_VU", "CAT_VU0",
-        "CAT_VU1", "CAT_VU_JIT", "CAT_VU_JIT64"};
+    const char* cat_enum_text[] = {"MISC", "EE", "EE_TIMING", "IOP", "IOP_DMA", "IOP_TIMING", "COP0", "COP2", "FPU",
+        "IPU", "CDVD", "PAD", "SPU", "GIF", "GS", "GS_R", "GS_T", "GS_JIT", "DMAC", "SIO2", "VIF", "SIF", "VU", "VU0",
+        "VU1", "VU_JIT", "VU_JIT64"};
+    const char* lvl_enum_text[] = {"TRACE", "DEBUG", "INFO", "WARN", "FATAL", "OFF"};
     for (int i = 0; i < (int)logger::Category::NUM_CATEGORIES; ++i)
     {
-        struct timespec wait = {0, 100000000};
-        nanosleep(&wait, &wait);
-        logger::log_write(static_cast<logger::Category>(i), logger::Level::INFO, "using category ");
-        logger::log_write(static_cast<logger::Category>(i), logger::Level::WARN, cat_enum_text[i]);
-        if (i == (int)logger::Category::NUM_CATEGORIES - 1)
-            logger::log_writeline(static_cast<logger::Category>(i), logger::Level::INFO, nullptr);
+        for (int j = 0; j < (int)logger::Level::NUM_LEVELS; ++j)
+        {
+            struct timespec wait = {0, 10000000};
+            nanosleep(&wait, &wait);
+            logger::writeline(static_cast<logger::Category>(i), static_cast<logger::Level>(j),
+                "using category {} at severity level {}", cat_enum_text[i], lvl_enum_text[j]);
+        }
     }
 }
 
@@ -174,9 +172,9 @@ LOGGER_CREATE_CONVENIENCE_WRAPPERS(logger::Category::MISC)
 
 void test_logger2()
 {
-    trace_l("trace");
-    debug_l("debug");
-    info_l("info");
-    warn_l("warn");
-    fatal_l("fatal");
+    trace("trace");
+    debug("debug");
+    info("info");
+    warn("warn");
+    fatal("fatal");
 }

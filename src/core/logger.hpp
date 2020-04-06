@@ -2,6 +2,7 @@
 #define __LOGGER_HPP__
 
 #include <fmt/core.h>
+#include <chrono>
 #include <memory>
 
 namespace logger
@@ -51,51 +52,39 @@ namespace logger
         NUM_LEVELS
     };
 
-    class LogHandler
+    class LogSink
     {
     public:
-        virtual ~LogHandler() = default;
-        virtual void write(Category cat, Level lvl, const char* str, char eol) = 0;
+        virtual ~LogSink() = default;
+        virtual void write(Category cat, Level lvl, const std::chrono::system_clock::time_point& time, const char* str) = 0;
     };
 
-    class StreamHandler : public LogHandler
+    class ConsoleSink : public LogSink
     {
-        Category last_cat = Category::NUM_CATEGORIES;
-        Level    last_lvl = Level::NUM_LEVELS;
-        char     last_eol = '\n';
+    public:
+        void write(Category cat, Level lvl, const std::chrono::system_clock::time_point& time, const char* str) override;
+    };
 
-    protected:
-        const bool colour;
+    class FileSink : public LogSink
+    {
         FILE* stream;
 
     public:
-        inline explicit StreamHandler(FILE* file, bool enable_colour = false) : stream(file), colour(enable_colour) {}
-        void write(Category cat, Level lvl, const char* str, char eol) override;
+        explicit FileSink(const char* path);
+        ~FileSink() override;
+        void write(Category cat, Level lvl, const std::chrono::system_clock::time_point& time, const char* str) override;
     };
 
-    class ConsoleHandler : public StreamHandler
-    {
-    public:
-        inline ConsoleHandler() : StreamHandler(stderr, true) {};
-    };
+    void add_sink(std::unique_ptr<LogSink>&& new_sink);
 
-    class FileHandler : public StreamHandler
-    {
-    public:
-        explicit FileHandler(const char* path);
-        ~FileHandler() override;
-    };
-
-    void add_handler(std::unique_ptr<LogHandler>&& new_handler);
-
-    void __write_internal(Category cat, Level lvl, const char* str, char eol);
+    void __write_internal(Category cat, Level lvl, const char* str);
 
     template <typename... Args>
-    inline void __write_internal(Category cat, Level lvl, char eol, const char* fmt, const Args&... args)
+    inline void __write_internal(Category cat, Level lvl, const char* fmt, const Args&... args)
     {
         try
         {
-            __write_internal(cat, lvl, fmt::format(fmt, args...).c_str(), eol);
+            __write_internal(cat, lvl, fmt::format(fmt, args...).c_str());
         }
         catch (std::exception& e)
         {
@@ -103,42 +92,24 @@ namespace logger
         }
     }
 
-    inline void log_write(Category cat, Level lvl, const char* str)
+    inline void writeline(Category cat, Level lvl, const char* str)
     {
-        __write_internal(cat, lvl, str, '\0');
-    }
-
-    inline void log_writeline(Category cat, Level lvl, const char* str)
-    {
-        __write_internal(cat, lvl, str, '\n');
+        __write_internal(cat, lvl, str);
     }
 
     template <typename... Args>
-    inline void log_write(Category cat, Level lvl, const char* fmt, const Args&... args)
+    inline void writeline(Category cat, Level lvl, const char* fmt, const Args&... args)
     {
-        __write_internal(cat, lvl, '\0', fmt, args...);
-    }
-
-    template <typename... Args>
-    inline void log_writeline(Category cat, Level lvl, const char* fmt, const Args&... args)
-    {
-        __write_internal(cat, lvl, '\n', fmt, args...);
+        __write_internal(cat, lvl, fmt, args...);
     }
 }
 
 #define __LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT, LVL) \
     inline void NAME(const char* str) { \
-        logger::log_write(CAT, LVL, str); } \
-    inline void NAME##_l(const char* str) { \
-        logger::log_writeline(CAT, LVL, str); } \
+        logger::writeline(CAT, LVL, str); } \
     template <typename... Args> \
     inline void NAME(const char* fmt, const Args&... args) { \
-        logger::log_write(CAT, LVL, fmt, args...); } \
-    template <typename... Args> \
-    inline void NAME##_l(const char* fmt, const Args&... args) { \
-        logger::log_writeline(CAT, LVL, fmt, args...); } \
-    inline void NAME##_l() { \
-        logger::log_writeline(CAT, LVL, nullptr); }
+        logger::writeline(CAT, LVL, fmt, args...); }
 
 #define LOGGER_CREATE_CONVENIENCE_WRAPPERS(CAT) \
     __LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::Level::TRACE) \
