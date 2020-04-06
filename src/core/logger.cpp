@@ -3,6 +3,7 @@
 #include <vector>
 #include <chrono>
 #include <fmt/chrono.h>
+#include <mutex>
 
 using namespace logger;
 namespace chrono { using namespace std::chrono; }
@@ -187,6 +188,8 @@ void logger::add_handler(std::unique_ptr<LogHandler>&& new_handler)
 
 void logger::__write_internal(Category cat, Level lvl, const char* str, char eol)
 {
+    static std::mutex mutex;
+    std::lock_guard<std::mutex> lock(mutex);
     for (auto& handler : handlers)
         handler->write(cat, lvl, str, eol);
 }

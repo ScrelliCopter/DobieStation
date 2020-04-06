@@ -3,6 +3,7 @@
 #include "core/logger.hpp"
 #include <array>
 #include <tuple>
+#include <thread>
 
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -77,7 +78,11 @@ LoggingWindow::LoggingWindow(QWidget* parent) :
     button_box->addWidget(btn_close);
     layout.addLayout(button_box);
 
-    connect(btn_test, &QPushButton::pressed, test_logger);
+    connect(btn_test, &QPushButton::pressed, []()
+    {
+        auto t = std::thread(test_logger);
+        t.detach();
+    });
     connect(btn_close, &QPushButton::pressed, this, &QWidget::close);
 
     setLayout(&layout);
