@@ -53,13 +53,13 @@ const std::array<std::tuple<logger::Category, QString>, (int)logger::Category::N
     std::make_tuple(logger::Category::VU_JIT,   "VU JIT"),
     std::make_tuple(logger::Category::VU_JIT64, "VU JIT64")};
 
-const std::array<std::tuple<logger::Level, QString>, logger::NUM_LEVELS> levels = {
-    std::make_tuple(logger::OFF,   "Off"),
-    std::make_tuple(logger::FATAL, "Fatal"),
-    std::make_tuple(logger::WARN,  "Warning"),
-    std::make_tuple(logger::INFO,  "Info"),
-    std::make_tuple(logger::DEBUG, "Debug"),
-    std::make_tuple(logger::TRACE, "Trace")};
+const std::array<std::tuple<logger::Level, QString>, (int)logger::Level::NUM_LEVELS> levels = {
+    std::make_tuple(logger::Level::OFF,   "Off"),
+    std::make_tuple(logger::Level::FATAL, "Fatal"),
+    std::make_tuple(logger::Level::WARN,  "Warning"),
+    std::make_tuple(logger::Level::INFO,  "Info"),
+    std::make_tuple(logger::Level::DEBUG, "Debug"),
+    std::make_tuple(logger::Level::TRACE, "Trace")};
 
 
 LoggingWindow::LoggingWindow(QWidget* parent) :
@@ -134,19 +134,19 @@ QLayout* LoggingWindow::create_view(QWidget* parent)
 
 void test_logger()
 {
-    logger::log_writeline(logger::Category::MISC, logger::INFO, "test {0}:{1:04X} {0}", "test", 10);
-    logger::log_writeline(logger::Category::MISC, logger::INFO, "poop {:i}", "oops"); // type error
+    logger::log_writeline(logger::Category::MISC, logger::Level::INFO, "test {0}:{1:04X} {0}", "test", 10);
+    logger::log_writeline(logger::Category::MISC, logger::Level::INFO, "poop {:i}", "oops"); // type error
     const char text[24] = {'N', 'G', 'A', 'G', 'L', 'E', 'R', 'I', 'D', 'Y', 'M', 'O', 'T', 'H', 'F', 'U', 'C', 'K'};
-    logger::log_writeline(logger::Category::MISC, logger::FATAL, "{}{}{} {}{}{} {}{} {}{}",
+    logger::log_writeline(logger::Category::MISC, logger::Level::FATAL, "{}{}{} {}{}{} {}{} {}{}",
         fmt::basic_string_view<char>(text + 5, 1), fmt::basic_string_view<char>(text + 0, 4),
         fmt::basic_string_view<char>(text + 5, 1),
         fmt::basic_string_view<char>(text + 6, 3), fmt::basic_string_view<char>(text + 4, 2),
         fmt::basic_string_view<char>(text + 9, 1),
         fmt::basic_string_view<char>(text + 10, 4), fmt::basic_string_view<char>(text + 5, 2),
         fmt::basic_string_view<char>(text + 14, 4), fmt::basic_string_view<char>(text + 5, 2));
-    logger::log_write(logger::Category::MISC, logger::INFO, "hi?");
-    logger::log_write(logger::Category::MISC, logger::WARN, "hi!");
-    logger::log_writeline(logger::Category::EE, logger::TRACE, "hi.");
+    logger::log_write(logger::Category::MISC, logger::Level::INFO, "hi?");
+    logger::log_write(logger::Category::MISC, logger::Level::WARN, "hi!");
+    logger::log_writeline(logger::Category::EE, logger::Level::TRACE, "hi.");
 
     test_logger2();
 
@@ -158,10 +158,10 @@ void test_logger()
     {
         struct timespec wait = {0, 100000000};
         nanosleep(&wait, &wait);
-        logger::log_write(static_cast<logger::Category>(i), logger::INFO, "using category ");
-        logger::log_write(static_cast<logger::Category>(i), logger::WARN, cat_enum_text[i]);
+        logger::log_write(static_cast<logger::Category>(i), logger::Level::INFO, "using category ");
+        logger::log_write(static_cast<logger::Category>(i), logger::Level::WARN, cat_enum_text[i]);
         if (i == (int)logger::Category::NUM_CATEGORIES - 1)
-            logger::log_writeline(static_cast<logger::Category>(i), logger::INFO, nullptr);
+            logger::log_writeline(static_cast<logger::Category>(i), logger::Level::INFO, nullptr);
     }
 }
 

@@ -39,7 +39,7 @@ namespace logger
         NUM_CATEGORIES
     };
 
-    enum Level
+    enum class Level
     {
         TRACE,
         DEBUG,
@@ -61,7 +61,7 @@ namespace logger
     class StreamHandler : public LogHandler
     {
         Category last_cat = Category::NUM_CATEGORIES;
-        Level    last_lvl = NUM_LEVELS;
+        Level    last_lvl = Level::NUM_LEVELS;
         char     last_eol = '\n';
 
     protected:
@@ -141,10 +141,10 @@ namespace logger
         logger::log_writeline(CAT, LVL, nullptr); }
 
 #define LOGGER_CREATE_CONVENIENCE_WRAPPERS(CAT) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::TRACE) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::DEBUG) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::INFO) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::WARN) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(fatal, CAT, logger::FATAL)
+    __LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::Level::TRACE) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::Level::DEBUG) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::Level::INFO) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::Level::WARN) \
+    __LOGGER_GENERATE_WRAPPER_FUNC(fatal, CAT, logger::Level::FATAL)
 
 #endif//__LOGGER_HPP__

@@ -40,11 +40,11 @@ constexpr const char* level_esc(Level lvl)
 {
     switch (lvl)
     {
-    case (TRACE): return ESC(DIM);
-    case (DEBUG): return ESC(FG_BLUE);
-    //case (INFO):  return ESC(RESET);
-    case (WARN):  return ESC(FG_YELLOW);
-    case (FATAL): return ESC2(BRIGHT, BG_RED);
+    case (Level::TRACE): return ESC(DIM);
+    case (Level::DEBUG): return ESC(FG_BLUE);
+    //case (Level::INFO):  return ESC(RESET);
+    case (Level::WARN):  return ESC(FG_YELLOW);
+    case (Level::FATAL): return ESC2(BRIGHT, BG_RED);
 
     default: return "";
     }
@@ -89,11 +89,11 @@ constexpr const char* level_token(Level lvl)
 {
     switch (lvl)
     {
-    case (TRACE): return "Trace: ";
-    case (DEBUG): return "Debug: ";
-    case (INFO):  return "Info: ";
-    case (WARN):  return "Warn: ";
-    case (FATAL): return "FATAL: ";
+    case (Level::TRACE): return "Trace: ";
+    case (Level::DEBUG): return "Debug: ";
+    case (Level::INFO):  return "Info: ";
+    case (Level::WARN):  return "Warn: ";
+    case (Level::FATAL): return "FATAL: ";
 
     default: return "";
     }
