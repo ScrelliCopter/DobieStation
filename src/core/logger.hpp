@@ -1,5 +1,5 @@
-#ifndef __LOGGER_HPP__
-#define __LOGGER_HPP__
+#ifndef LOGGER_HPP
+#define LOGGER_HPP
 
 #include <fmt/core.h>
 #include <chrono>
@@ -77,14 +77,14 @@ namespace logger
 
     void add_sink(std::unique_ptr<LogSink>&& new_sink);
 
-    void __write_internal(Category cat, Level lvl, const char* str);
+    void _write_internal(Category cat, Level lvl, const char* str);
 
     template <typename... Args>
-    inline void __write_internal(Category cat, Level lvl, const char* fmt, const Args&... args)
+    inline void _write_internal(Category cat, Level lvl, const char* fmt, const Args&... args)
     {
         try
         {
-            __write_internal(cat, lvl, fmt::format(fmt, args...).c_str());
+            _write_internal(cat, lvl, fmt::format(fmt, args...).c_str());
         }
         catch (std::exception& e)
         {
@@ -94,17 +94,17 @@ namespace logger
 
     inline void writeline(Category cat, Level lvl, const char* str)
     {
-        __write_internal(cat, lvl, str);
+        _write_internal(cat, lvl, str);
     }
 
     template <typename... Args>
     inline void writeline(Category cat, Level lvl, const char* fmt, const Args&... args)
     {
-        __write_internal(cat, lvl, fmt, args...);
+        _write_internal(cat, lvl, fmt, args...);
     }
 }
 
-#define __LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT, LVL) \
+#define LOGGER_GENERATE_WRAPPER_FUNC(NAME, CAT, LVL) \
     inline void NAME(const char* str) { \
         logger::writeline(CAT, LVL, str); } \
     template <typename... Args> \
@@ -112,10 +112,10 @@ namespace logger
         logger::writeline(CAT, LVL, fmt, args...); }
 
 #define LOGGER_CREATE_CONVENIENCE_WRAPPERS(CAT) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::Level::TRACE) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::Level::DEBUG) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::Level::INFO) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::Level::WARN) \
-    __LOGGER_GENERATE_WRAPPER_FUNC(fatal, CAT, logger::Level::FATAL)
+    LOGGER_GENERATE_WRAPPER_FUNC(trace, CAT, logger::Level::TRACE) \
+    LOGGER_GENERATE_WRAPPER_FUNC(debug, CAT, logger::Level::DEBUG) \
+    LOGGER_GENERATE_WRAPPER_FUNC(info, CAT, logger::Level::INFO) \
+    LOGGER_GENERATE_WRAPPER_FUNC(warn, CAT, logger::Level::WARN) \
+    LOGGER_GENERATE_WRAPPER_FUNC(fatal, CAT, logger::Level::FATAL)
 
-#endif//__LOGGER_HPP__
+#endif//LOGGER_HPP

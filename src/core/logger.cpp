@@ -162,7 +162,7 @@ void logger::add_sink(std::unique_ptr<LogSink>&& new_sink)
         sinks.emplace_back(std::move(new_sink));
 }
 
-void logger::__write_internal(Category cat, Level lvl, const char* str)
+void logger::_write_internal(Category cat, Level lvl, const char* str)
 {
     auto now = chrono::system_clock::now();
 
